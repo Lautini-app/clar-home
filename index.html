@@ -23,6 +23,7 @@ button{border:0;background:none;color:inherit;cursor:pointer;}
 .app-root{position:fixed;inset:0;overflow:hidden;background:var(--paper);}
 .screen{position:fixed;inset:0;display:none;flex-direction:column;background:var(--paper);}
 .screen.active{display:flex;}
+.screen:not(.splash){background:var(--paper);}
 .safe-view{padding-top:var(--safe-area-top);padding-bottom:var(--safe-area-bottom);}
 .logo{font-weight:800;letter-spacing:-0.07em;line-height:0.9;user-select:none;}
 .logo-dot{color:inherit;}
@@ -239,6 +240,15 @@ function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function withTimeout(promise, ms, message) {
+  let timeoutId = 0;
+  const timeout = new Promise((_, reject) => {
+    timeoutId = window.setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout])
+    .finally(() => window.clearTimeout(timeoutId));
+}
+
 function showScreen(name) {
   Object.entries(screens).forEach(([screenName, element]) => {
     element.classList.toggle('active', screenName === name);
@@ -317,7 +327,7 @@ async function readVaultToken() {
     const result = await despia(`readvault://?key=${VAULT_KEY}`, [VAULT_KEY]);
     return extractToken(result);
   } catch (error) {
-    return '';
+    throw new Error(error?.message || 'Vault konnte nicht gelesen werden.');
   }
 }
 
@@ -669,10 +679,18 @@ async function init() {
   setupEvents();
   setupReviewerAccess();
 
-  const [token] = await Promise.all([
-    readVaultToken(),
-    delay(SPLASH_MS)
-  ]);
+  const splash = delay(SPLASH_MS);
+  let token = '';
+  try {
+    [token] = await Promise.all([
+      withTimeout(readVaultToken(), SPLASH_MS, 'Vault konnte nicht gelesen werden.'),
+      splash
+    ]);
+  } catch (error) {
+    await splash;
+    showLogin();
+    return;
+  }
 
   if (token) {
     setToken(token);
