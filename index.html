@@ -4,288 +4,687 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#2E5C3E">
 <title>clar</title>
-<script src="https://cdn.jsdelivr.net/npm/despia-native/index.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
+:root{
+  --green:#2E5C3E;
+  --paper:#F5F3EE;
+  --text:#1C2E1C;
+  --muted:#7B8278;
+  --line:#E7E3DA;
+  --safe-area-top:env(safe-area-inset-top,0px);
+  --safe-area-bottom:env(safe-area-inset-bottom,0px);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#F5F3EE;}
-.app-root{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;overflow:hidden;background:#F5F3EE;}
-.safe-top{flex-shrink:0;height:var(--safe-area-top,env(safe-area-inset-top,0));}
-.safe-bottom{flex-shrink:0;height:var(--safe-area-bottom,env(safe-area-inset-bottom,0));}
-.app-header{flex-shrink:0;padding:1.5rem 1.25rem 0.75rem;border-bottom:0.5px solid #E8E6E1;}
-.logo{font-size:2.5rem;font-weight:700;color:#1C2E1C;letter-spacing:-1px;line-height:1;}
-.logo span{color:#2E5C3E;}
-.hello{font-size:0.8rem;color:#888;font-weight:500;margin-top:0.75rem;}
-.title{font-size:1.5rem;font-weight:700;color:#1C2E1C;}
-.app-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none;-ms-overflow-style:none;padding:0 0 1rem;}
-.app-content::-webkit-scrollbar{display:none;}
-.screen{display:none;}
-.screen.active{display:block;}
-.login-card{background:#fff;margin:1rem;border-radius:1.25rem;border:0.5px solid #E8E6E1;padding:1.25rem;box-shadow:0 0.75rem 2rem #1C2E1C0D;}
-.login-title{font-size:1.25rem;font-weight:700;color:#1C2E1C;margin-bottom:0.375rem;}
-.login-copy{font-size:0.9rem;line-height:1.4;color:#777;margin-bottom:1rem;}
-.form{display:flex;flex-direction:column;gap:0.75rem;}
-.field{display:flex;flex-direction:column;gap:0.375rem;}
-.field label{font-size:0.75rem;font-weight:700;color:#777;text-transform:uppercase;letter-spacing:0.5px;}
-.input{width:100%;height:3rem;border:0.5px solid #E8E6E1;border-radius:0.875rem;background:#FAFAF8;color:#1C2E1C;font:inherit;font-size:1rem;padding:0 0.875rem;outline:none;}
-.input:focus{border-color:#2E5C3E;background:#fff;}
-.button{width:100%;min-height:3rem;border:0;border-radius:0.875rem;background:#2E5C3E;color:#fff;font:inherit;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;}
-.button:active{transform:scale(0.98);}
-.button:disabled{opacity:0.65;cursor:default;transform:none;}
-.button.apple{background:#1C2E1C;}
-.status{min-height:1.125rem;color:#B45A3C;font-size:0.8rem;line-height:1.4;margin-top:0.75rem;}
-.loading{display:flex;align-items:center;gap:0.625rem;color:#777;font-size:0.9rem;margin:1rem;}
-.spinner{width:1rem;height:1rem;border:2px solid #E8E6E1;border-top-color:#2E5C3E;border-radius:999px;animation:spin 0.8s linear infinite;}
-.section{font-size:0.7rem;font-weight:700;color:#999;letter-spacing:1px;padding:1.25rem 1.25rem 0.5rem;text-transform:uppercase;}
-.tile{display:flex;align-items:center;background:#fff;margin:0 1rem 0.625rem;border-radius:0.875rem;padding:0.875rem 1rem;border:0.5px solid #E8E6E1;gap:0.875rem;cursor:pointer;text-decoration:none;min-height:2.75rem;}
-.tile:active{transform:scale(0.98);background:#FAFAF8;}
-.tile.dim{opacity:0.5;pointer-events:none;}
-.icon{width:3rem;height:3rem;border-radius:0.75rem;display:flex;align-items:center;justify-content:center;font-size:1.375rem;flex-shrink:0;}
+html,body{height:100%;overflow:hidden;background:var(--paper);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;}
+button,input{font:inherit;}
+button{border:0;background:none;color:inherit;cursor:pointer;}
+.app-root{position:fixed;inset:0;overflow:hidden;background:var(--paper);}
+.screen{position:fixed;inset:0;display:none;flex-direction:column;background:var(--paper);}
+.screen.active{display:flex;}
+.safe-view{padding-top:var(--safe-area-top);padding-bottom:var(--safe-area-bottom);}
+.logo{font-weight:800;letter-spacing:-0.07em;line-height:0.9;user-select:none;}
+.logo-dot{color:inherit;}
+.splash{align-items:center;justify-content:center;background:var(--green);color:#fff;}
+.splash .logo{font-size:4.7rem;}
+.login,.paywall,.tiles{background:var(--paper);}
+.center-screen{align-items:center;justify-content:center;padding:calc(var(--safe-area-top) + 1.25rem) 1.25rem calc(var(--safe-area-bottom) + 1.25rem);}
+.card{width:100%;max-width:26rem;background:#fff;border-radius:1.25rem;padding:1.35rem;box-shadow:0 1.1rem 2.8rem rgba(28,46,28,0.10);border:1px solid rgba(28,46,28,0.06);}
+.login-logo{font-size:3.4rem;color:var(--green);text-align:center;margin-bottom:1.5rem;}
+.title{font-size:1.55rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.45rem;}
+.copy{font-size:0.95rem;line-height:1.45;color:var(--muted);margin-bottom:1.2rem;}
+.apple-button{width:100%;min-height:3.25rem;border-radius:0.75rem;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;gap:0.55rem;font-size:1rem;font-weight:600;}
+.apple-button svg{width:1.15rem;height:1.15rem;fill:currentColor;}
+.primary-button{width:100%;min-height:3.2rem;border-radius:0.9rem;background:var(--green);color:#fff;font-size:1rem;font-weight:750;display:flex;align-items:center;justify-content:center;padding:0 1rem;}
+.secondary-button{width:100%;min-height:3.05rem;border-radius:0.9rem;background:#EEF1EC;color:var(--green);font-size:0.95rem;font-weight:750;display:flex;align-items:center;justify-content:center;padding:0 1rem;}
+.apple-button:active,.primary-button:active,.secondary-button:active,.tile:active,.icon-button:active{transform:scale(0.98);}
+button:disabled{opacity:0.55;cursor:default;transform:none!important;}
+.message{min-height:1.2rem;margin-top:0.85rem;color:#A85738;font-size:0.82rem;line-height:1.4;text-align:center;}
+.reviewer-hint{position:fixed;left:0;right:0;bottom:calc(var(--safe-area-bottom) + 1rem);text-align:center;color:#A5A9A2;font-size:0.78rem;font-weight:600;letter-spacing:0.02em;}
+.paywall-actions{display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;}
+.app-header{padding:calc(var(--safe-area-top) + 1rem) 1.1rem 0.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--paper);border-bottom:1px solid rgba(28,46,28,0.06);}
+.header-logo{font-size:2.15rem;color:var(--green);}
+.icon-button{width:2.65rem;height:2.65rem;border-radius:999px;background:#fff;box-shadow:0 0.55rem 1.45rem rgba(28,46,28,0.08);display:flex;align-items:center;justify-content:center;color:var(--text);}
+.icon-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
+.tiles-content{flex:1;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:1rem 1rem calc(var(--safe-area-bottom) + 1rem);scrollbar-width:none;}
+.tiles-content::-webkit-scrollbar{display:none;}
+.tiles-status{min-height:1.25rem;margin:0.15rem 0 0.85rem;color:var(--muted);font-size:0.84rem;text-align:center;}
+.section{margin:1.15rem 0 0.55rem;color:#969B93;font-size:0.72rem;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;}
+.section:first-child{margin-top:0;}
+.tile{width:100%;min-height:5.35rem;margin-bottom:0.7rem;padding:0.85rem 0.95rem;border-radius:14px;background:#fff;box-shadow:0 0.8rem 2rem rgba(28,46,28,0.08);display:flex;align-items:center;gap:0.9rem;text-align:left;}
+.tile.disabled{opacity:0.45;cursor:default;}
+.tile.locked{box-shadow:0 0.65rem 1.6rem rgba(28,46,28,0.06);}
+.tile-icon{width:3.2rem;height:3.2rem;border-radius:1rem;display:flex;align-items:center;justify-content:center;font-size:1.45rem;flex-shrink:0;}
 .tile-body{flex:1;min-width:0;}
-.tile-name{font-size:1rem;font-weight:700;color:#1C2E1C;display:flex;align-items:center;gap:0.5rem;}
-.tile-tag{font-size:0.8rem;color:#888;margin-top:0.125rem;}
-.chevron{font-size:1.375rem;color:#CCC;flex-shrink:0;}
-.badge-beta{font-size:0.7rem;font-weight:600;border-radius:0.375rem;padding:0.125rem 0.4375rem;color:#5B7AAE;background:#5B7AAE18;}
-.badge-soon{font-size:0.7rem;font-weight:600;border-radius:0.375rem;padding:0.125rem 0.4375rem;color:#AAA;background:#F0EEE9;}
-.footer{text-align:center;color:#BBB;font-size:0.75rem;padding:1.5rem 1.25rem;}
-@keyframes spin{to{transform:rotate(360deg);}}
+.tile-name{display:flex;align-items:center;gap:0.45rem;color:var(--text);font-size:1.05rem;font-weight:800;letter-spacing:-0.02em;}
+.tile-tag{margin-top:0.18rem;color:var(--muted);font-size:0.84rem;line-height:1.3;}
+.tile-action{flex-shrink:0;color:#C2C5BE;font-size:1.45rem;font-weight:600;}
+.tile.locked .tile-action{padding:0.45rem 0.65rem;border-radius:999px;background:#EEF1EC;color:var(--green);font-size:0.76rem;font-weight:800;}
+.badge{display:inline-flex;align-items:center;border-radius:999px;padding:0.14rem 0.45rem;font-size:0.68rem;font-weight:800;line-height:1;color:#52739F;background:rgba(82,115,159,0.12);}
+.badge.soon{color:#9A9D96;background:#EEECE5;}
+.modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:1.25rem;background:rgba(28,46,28,0.36);backdrop-filter:blur(10px);}
+.modal.active{display:flex;}
+.modal-card{width:100%;max-width:24rem;background:#fff;border-radius:1.25rem;padding:1.25rem;box-shadow:0 1.2rem 3.2rem rgba(28,46,28,0.18);}
+.modal-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+.modal-title{font-size:1.2rem;font-weight:800;letter-spacing:-0.03em;}
+.close-button{width:2rem;height:2rem;border-radius:999px;background:#F1F0EA;color:var(--muted);font-weight:800;}
+.form{display:flex;flex-direction:column;gap:0.75rem;}
+.field{display:flex;flex-direction:column;gap:0.35rem;}
+.field label{color:#7E857B;font-size:0.72rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;}
+.input{width:100%;height:3.05rem;border:1px solid var(--line);border-radius:0.88rem;background:#FAF9F5;color:var(--text);outline:none;padding:0 0.9rem;font-size:1rem;}
+.input:focus{border-color:var(--green);background:#fff;}
+.modal-message{min-height:1.1rem;margin-top:0.75rem;color:#A85738;font-size:0.82rem;line-height:1.4;}
+@media (min-width:560px){
+  .tiles-content{max-width:32rem;width:100%;margin:0 auto;}
+  .app-header{padding-left:calc(50% - 16rem);padding-right:calc(50% - 16rem);}
+}
 </style>
 </head>
 <body>
-<div class="app-root">
-  <div class="safe-top"></div>
-  <div class="app-header">
-    <div class="logo">clar<span>·</span></div>
-    <div class="hello">Hallo</div>
-    <div class="title">Deine clar·Apps</div>
-  </div>
-  <div class="app-content">
-    <div id="loading-screen" class="screen active">
-      <div class="loading">
-        <div class="spinner" aria-hidden="true"></div>
-        <div>Anmeldung wird geprüft...</div>
-      </div>
+<main class="app-root" aria-live="polite">
+  <section id="splash-screen" class="screen splash active" aria-label="clar startet">
+    <div class="logo" data-secret-logo>clar<span class="logo-dot">·</span></div>
+  </section>
+
+  <section id="login-screen" class="screen login center-screen" aria-label="Anmeldung">
+    <div class="logo login-logo" data-secret-logo>clar<span class="logo-dot">·</span></div>
+    <div class="card">
+      <h1 class="title">Willkommen</h1>
+      <p id="login-copy" class="copy">Melde dich mit Apple an, um deine clar·Apps zu öffnen.</p>
+      <button id="apple-login" class="apple-button" type="button" aria-label="Mit Apple anmelden">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.365 1.43c0 1.14-.47 2.16-1.22 2.94-.8.84-2.1 1.49-3.15 1.4-.14-1.1.4-2.25 1.12-3 .8-.82 2.2-1.44 3.25-1.34zM20.5 17.52c-.55 1.27-.82 1.84-1.52 2.96-.98 1.5-2.35 3.38-4.06 3.4-1.52.02-1.91-.99-3.98-.98-2.06 0-2.5 1-4.02.98-1.71-.02-3.01-1.7-3.99-3.2-2.72-4.18-3-9.08-1.33-11.69 1.2-1.87 3.08-2.96 4.85-2.96 1.8 0 2.93.99 4.42.99 1.45 0 2.33-.99 4.42-.99 1.58 0 3.25.86 4.43 2.34-3.9 2.14-3.27 7.7.78 9.15z"/></svg>
+        Mit Apple anmelden
+      </button>
+      <div id="login-status" class="message" role="status" aria-live="polite"></div>
     </div>
-    <div id="login-screen" class="screen">
-      <div class="login-card">
-        <div class="login-title">Einloggen</div>
-        <div id="login-copy" class="login-copy">Melde dich an, um deine clar·Apps zu öffnen.</div>
-        <button id="apple-login" class="button apple" type="button">Mit Apple anmelden</button>
-        <form id="email-login" class="form">
-          <div class="field">
-            <label for="email">E-Mail</label>
-            <input id="email" class="input" type="email" autocomplete="email" required>
-          </div>
-          <div class="field">
-            <label for="password">Passwort</label>
-            <input id="password" class="input" type="password" autocomplete="current-password" required>
-          </div>
-          <button id="email-submit" class="button" type="submit">Einloggen</button>
-        </form>
-        <div id="login-status" class="status" role="status" aria-live="polite"></div>
+    <div class="reviewer-hint">Reviewer Access</div>
+  </section>
+
+  <section id="paywall-screen" class="screen paywall center-screen" aria-label="Abo freischalten">
+    <div class="card">
+      <h1 class="title">clar freischalten</h1>
+      <p class="copy">Aktiviere dein Abo, um deine clar·Apps zu nutzen.</p>
+      <div class="paywall-actions">
+        <button id="paywall-button" class="primary-button" type="button">Abo anzeigen</button>
+        <button id="restore-button" class="secondary-button" type="button">Käufe prüfen</button>
       </div>
+      <div id="paywall-status" class="message" role="status" aria-live="polite"></div>
     </div>
-    <div id="tiles-screen" class="screen">
-      <div class="section">Aktiv</div>
-      <a id="tile-markt" class="tile" href="https://clar.markt.lautini.ch/app">
-        <div class="icon" style="background:#C97B3A18;">🛒</div>
+  </section>
+
+  <section id="tiles-screen" class="screen tiles" aria-label="clar Apps">
+    <header class="app-header">
+      <div class="logo header-logo" data-secret-logo>clar<span class="logo-dot">·</span></div>
+      <button id="account-button" class="icon-button" type="button" aria-label="Abo verwalten">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5Z"></path>
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2.05 2.05 0 0 1 0 2.9 2.05 2.05 0 0 1-2.9 0l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .15 1.7 1.7 0 0 0-1 1.55v.17a2.05 2.05 0 0 1-4.1 0v-.09a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.84.37l-.06.06a2.05 2.05 0 0 1-2.9 0 2.05 2.05 0 0 1 0-2.9l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.15-1 1.7 1.7 0 0 0-1.55-1H2.73a2.05 2.05 0 0 1 0-4.1h.09a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.37-1.84L4 5.9A2.05 2.05 0 0 1 6.9 3l.06.06A1.7 1.7 0 0 0 8.8 3.4a1.7 1.7 0 0 0 1-1.55v-.17a2.05 2.05 0 0 1 4.1 0v.09a1.7 1.7 0 0 0 1.1 1.6 1.7 1.7 0 0 0 1.84-.37l.06-.06a2.05 2.05 0 0 1 2.9 0 2.05 2.05 0 0 1 0 2.9l-.06.06A1.7 1.7 0 0 0 19.4 8.8a1.7 1.7 0 0 0 .15 1 1.7 1.7 0 0 0 1.55 1h.17a2.05 2.05 0 0 1 0 4.1h-.09a1.7 1.7 0 0 0-1.78 1.1Z"></path>
+        </svg>
+      </button>
+    </header>
+    <div class="tiles-content">
+      <div id="tiles-status" class="tiles-status" role="status" aria-live="polite"></div>
+      <div class="section">Deine Apps</div>
+      <button id="tile-markt" class="tile" type="button" data-app="markt">
+        <div class="tile-icon" style="background:rgba(201,123,58,0.12);">🛒</div>
         <div class="tile-body">
           <div class="tile-name">clar·markt</div>
           <div class="tile-tag">Einkaufsplanung</div>
         </div>
-        <div class="chevron">›</div>
-      </a>
-      <a id="tile-heim" class="tile" href="https://clar.heim.lautini.ch/heute">
-        <div class="icon" style="background:#2E5C3E18;">🏠</div>
+        <div class="tile-action">›</div>
+      </button>
+      <button id="tile-heim" class="tile" type="button" data-app="heim">
+        <div class="tile-icon" style="background:rgba(46,92,62,0.12);">🏠</div>
         <div class="tile-body">
           <div class="tile-name">clar·heim</div>
           <div class="tile-tag">Haushaltsorganisation</div>
         </div>
-        <div class="chevron">›</div>
-      </a>
-      <a id="tile-log" class="tile" href="https://clar.log.lautini.ch">
-        <div class="icon" style="background:#5B7AAE18;">📖</div>
+        <div class="tile-action">›</div>
+      </button>
+      <button id="tile-log" class="tile" type="button" data-app="log">
+        <div class="tile-icon" style="background:rgba(82,115,159,0.12);">📖</div>
         <div class="tile-body">
-          <div class="tile-name">clar·log <span class="badge-beta">beta</span></div>
+          <div class="tile-name">clar·log <span class="badge">beta</span></div>
           <div class="tile-tag">Stimulanzien-Tagebuch</div>
         </div>
-        <div class="chevron">›</div>
-      </a>
+        <div class="tile-action">›</div>
+      </button>
       <div class="section">Demnächst</div>
-      <div class="tile dim">
-        <div class="icon" style="background:#F0EEE9;">🕐</div>
+      <button class="tile disabled" type="button" disabled>
+        <div class="tile-icon" style="background:#EEECE5;">🕐</div>
         <div class="tile-body">
-          <div class="tile-name">clar·tag <span class="badge-soon">bald</span></div>
+          <div class="tile-name">clar·tag <span class="badge soon">bald</span></div>
           <div class="tile-tag">Tagesstruktur & Routinen</div>
         </div>
-      </div>
-      <div class="footer">clar by lautini</div>
+      </button>
     </div>
+  </section>
+</main>
+
+<div id="reviewer-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="reviewer-title">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <h2 id="reviewer-title" class="modal-title">Reviewer Access</h2>
+        <p class="copy" style="margin:0.25rem 0 0;">Interner Zugang für App Review.</p>
+      </div>
+      <button id="reviewer-close" class="close-button" type="button" aria-label="Schließen">×</button>
+    </div>
+    <form id="reviewer-form" class="form">
+      <div class="field">
+        <label for="reviewer-email">E-Mail</label>
+        <input id="reviewer-email" class="input" type="email" value="reviewer@clar.app" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="reviewer-password">Passwort</label>
+        <input id="reviewer-password" class="input" type="password" autocomplete="current-password" required>
+      </div>
+      <button id="reviewer-submit" class="primary-button" type="submit">Einloggen</button>
+    </form>
+    <div id="reviewer-status" class="modal-message" role="status" aria-live="polite"></div>
   </div>
-  <div class="safe-bottom"></div>
 </div>
-<script>
+
+<script type="module">
+import despiaNative from 'https://cdn.jsdelivr.net/npm/despia-native/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
 const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
-const VAULT_KEY = 'supabase_token';
-const isDespia = navigator.userAgent.toLowerCase().includes('despia');
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
+const VAULT_KEY = 'supabase_access_token';
+const SPLASH_MS = 1500;
+const APP_URLS = {
+  markt: 'https://clar.markt.lautini.ch/app',
+  heim: 'https://clar.heim.lautini.ch/heute',
+  log: 'https://clar.log.lautini.ch'
+};
+
+const despia = window.despia || despiaNative;
+window.despia = despia;
+
+const isDespia = navigator.userAgent.toLowerCase().includes('despia') || Boolean(window.webkit?.messageHandlers?.despia);
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const state = {
+  token: '',
+  userId: '',
+  reviewer: false,
+  access: {
+    bundle: false,
+    single: false,
+    checking: false
+  }
+};
 
 const screens = {
-  loading: document.getElementById('loading-screen'),
+  splash: document.getElementById('splash-screen'),
   login: document.getElementById('login-screen'),
+  paywall: document.getElementById('paywall-screen'),
   tiles: document.getElementById('tiles-screen')
 };
 const appleLogin = document.getElementById('apple-login');
-const emailLogin = document.getElementById('email-login');
-const emailSubmit = document.getElementById('email-submit');
-const loginStatus = document.getElementById('login-status');
 const loginCopy = document.getElementById('login-copy');
+const loginStatus = document.getElementById('login-status');
+const paywallButton = document.getElementById('paywall-button');
+const restoreButton = document.getElementById('restore-button');
+const paywallStatus = document.getElementById('paywall-status');
+const tilesStatus = document.getElementById('tiles-status');
+const accountButton = document.getElementById('account-button');
+const reviewerModal = document.getElementById('reviewer-modal');
+const reviewerForm = document.getElementById('reviewer-form');
+const reviewerSubmit = document.getElementById('reviewer-submit');
+const reviewerStatus = document.getElementById('reviewer-status');
+
+function delay(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
 function showScreen(name) {
-  Object.keys(screens).forEach((key) => {
-    screens[key].classList.toggle('active', key === name);
+  Object.entries(screens).forEach(([screenName, element]) => {
+    element.classList.toggle('active', screenName === name);
   });
 }
 
-function setStatus(message) {
-  loginStatus.textContent = message || '';
+function hasDespia() {
+  return isDespia && typeof despia === 'function';
 }
 
-function setBusy(isBusy) {
+function setLoginBusy(isBusy) {
   appleLogin.disabled = isBusy;
-  emailSubmit.disabled = isBusy;
 }
 
-function withToken(url, token) {
-  const nextUrl = new URL(url);
-  nextUrl.searchParams.set('token', token);
-  return nextUrl.toString();
+function setPaywallBusy(isBusy) {
+  paywallButton.disabled = isBusy;
+  restoreButton.disabled = isBusy;
 }
 
-function renderTiles(token) {
-  document.getElementById('tile-markt').href = withToken('https://clar.markt.lautini.ch/app', token);
-  document.getElementById('tile-heim').href = withToken('https://clar.heim.lautini.ch/heute', token);
-  document.getElementById('tile-log').href = withToken('https://clar.log.lautini.ch', token);
-  showScreen('tiles');
+function base64UrlDecode(value) {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = normalized.padEnd(normalized.length + ((4 - normalized.length % 4) % 4), '=');
+  return atob(padded);
+}
+
+function decodeJwt(token) {
+  try {
+    const payload = JSON.parse(base64UrlDecode(token.split('.')[1] || ''));
+    return payload && typeof payload === 'object' ? payload : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function hashString(value) {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = ((hash << 5) - hash + value.charCodeAt(index)) | 0;
+  }
+  return Math.abs(hash).toString(16);
+}
+
+function setToken(token, fallbackUserId = '') {
+  state.token = token || '';
+  const claims = state.token ? decodeJwt(state.token) : {};
+  state.userId = fallbackUserId || claims.sub || claims.user_id || claims.uid || (state.token ? `token-${hashString(state.token)}` : '');
+}
+
+function getExternalId() {
+  return encodeURIComponent(state.userId || 'clar-home-user');
+}
+
+function extractToken(payload) {
+  if (!payload) return '';
+  if (typeof payload === 'string') return payload;
+  if (payload[VAULT_KEY]) return payload[VAULT_KEY];
+  if (payload.supabase_access_token) return payload.supabase_access_token;
+  if (payload.access_token) return payload.access_token;
+  if (payload.jwt) return payload.jwt;
+  if (payload.token) return payload.token;
+  if (payload.session?.access_token) return payload.session.access_token;
+  if (payload.data?.session?.access_token) return payload.data.session.access_token;
+  if (payload.result) return extractToken(payload.result);
+  if (payload.data) return extractToken(payload.data);
+  return '';
+}
+
+function extractUserId(payload) {
+  if (!payload || typeof payload !== 'object') return '';
+  return payload.user_id || payload.userId || payload.external_id || payload.user?.id || payload.data?.user?.id || '';
 }
 
 async function readVaultToken() {
-  if (!isDespia || typeof window.despia !== 'function') return '';
-
+  if (!hasDespia()) return '';
   try {
-    const data = await window.despia('readvault://?key=supabase_token', ['supabase_token']);
-    return data && data.supabase_token ? data.supabase_token : '';
+    const result = await despia(`readvault://?key=${VAULT_KEY}`, [VAULT_KEY]);
+    return extractToken(result);
   } catch (error) {
     return '';
   }
 }
 
 async function saveVaultToken(token) {
-  if (!token || !isDespia || typeof window.despia !== 'function') return;
-
-  await window.despia(`setvault://?key=${VAULT_KEY}&value=${encodeURIComponent(token)}`);
-}
-
-async function completeLogin(token) {
-  if (!token) {
-    throw new Error('Kein Token erhalten.');
-  }
-
-  await saveVaultToken(token);
-  renderTiles(token);
+  if (!token || !hasDespia()) return;
+  const value = encodeURIComponent(token);
+  await despia(`setvault://?key=${VAULT_KEY}&value=${value}&locked=false`);
 }
 
 function showLogin() {
-  setBusy(false);
-  setStatus('');
-  appleLogin.style.display = isDespia ? 'flex' : 'none';
-  emailLogin.style.display = isDespia ? 'none' : 'flex';
-  loginCopy.textContent = isDespia
+  setLoginBusy(false);
+  loginStatus.textContent = '';
+  appleLogin.style.display = hasDespia() ? 'flex' : 'none';
+  loginCopy.textContent = hasDespia()
     ? 'Melde dich mit Apple an, um deine clar·Apps zu öffnen.'
-    : 'Melde dich mit E-Mail und Passwort an, um deine clar·Apps zu öffnen.';
+    : 'Apple Sign-In ist nur in der Despia App verfügbar.';
   showScreen('login');
 }
 
-function handleClerkToken(payload) {
-  const token = payload && (payload.jwt || window.clerkJWT);
-  if (!token) return;
+function showPaywall(autoLaunch = true) {
+  if (state.reviewer) {
+    showTiles();
+    return;
+  }
+  paywallStatus.textContent = '';
+  setPaywallBusy(false);
+  showScreen('paywall');
+  if (autoLaunch) {
+    window.setTimeout(() => launchPaywall(), 220);
+  }
+}
 
-  completeLogin(token).catch((error) => {
-    setBusy(false);
-    setStatus(error.message || 'Apple Anmeldung konnte nicht gespeichert werden.');
-  });
+function activeIdentifiersFrom(data) {
+  const identifiers = new Set();
+  const now = Date.now();
+
+  function isExpired(node) {
+    const value = node?.expires_date || node?.expirationDate || node?.expiration_date || node?.expiresDate;
+    if (!value) return false;
+    const time = Date.parse(value);
+    return Number.isFinite(time) && time <= now;
+  }
+
+  function visit(node, activeContext = false) {
+    if (!node) return;
+    if (typeof node === 'string') {
+      if (activeContext) identifiers.add(node.toLowerCase());
+      return;
+    }
+    if (Array.isArray(node)) {
+      node.forEach((item) => visit(item, activeContext));
+      return;
+    }
+    if (typeof node !== 'object') return;
+
+    const active = activeContext || node.isActive === true || node.active === true || node.purchased === true || node.success === true || node.status === 'active';
+    if (active && !isExpired(node)) {
+      ['identifier', 'productIdentifier', 'product_id', 'productId', 'entitlement', 'id'].forEach((key) => {
+        if (typeof node[key] === 'string') identifiers.add(node[key].toLowerCase());
+      });
+    }
+
+    Object.entries(node).forEach(([key, value]) => {
+      const keyLower = key.toLowerCase();
+      const childIsActive = active || keyLower === 'active' || keyLower === 'activesubscriptions';
+      if (childIsActive && !isExpired(value) && typeof value === 'object' && !Array.isArray(value)) {
+        identifiers.add(keyLower);
+      }
+      visit(value, childIsActive);
+    });
+  }
+
+  visit(data);
+  return Array.from(identifiers);
+}
+
+function accessFromPurchaseData(data) {
+  const identifiers = activeIdentifiersFrom(data);
+  const activeText = identifiers.join(' ') || (typeof data === 'string' ? data.toLowerCase() : '');
+  const bundle = /\b2apps\b|2_apps|bundle|all[_-]?apps|clar[_-]?plus/.test(activeText);
+  const single = bundle || /\b1app\b|1_app|markt|market|single/.test(activeText);
+  return { bundle, single, checking: false };
+}
+
+function applyAccess(access) {
+  state.access = {
+    bundle: Boolean(access.bundle),
+    single: Boolean(access.single || access.bundle),
+    checking: false
+  };
+  renderTiles();
+}
+
+function renderTile(id, unlocked, locked) {
+  const tile = document.getElementById(`tile-${id}`);
+  const action = tile.querySelector('.tile-action');
+  tile.disabled = state.access.checking;
+  tile.classList.toggle('locked', Boolean(locked));
+  tile.classList.toggle('disabled', state.access.checking);
+  action.textContent = locked ? '🔒 Freischalten' : '›';
+  tile.setAttribute('aria-label', locked ? `${tile.dataset.app} freischalten` : `${tile.dataset.app} öffnen`);
+  tile.setAttribute('aria-disabled', state.access.checking ? 'true' : 'false');
+  if (unlocked) {
+    tile.dataset.locked = 'false';
+  } else {
+    tile.dataset.locked = 'true';
+  }
+}
+
+function renderTiles() {
+  if (state.reviewer) {
+    state.access = { bundle: true, single: true, checking: false };
+  }
+
+  const checking = state.access.checking;
+  const allApps = state.reviewer || state.access.bundle;
+  const marketOnly = !allApps && state.access.single;
+
+  tilesStatus.textContent = state.reviewer
+    ? 'Reviewer Access aktiv.'
+    : checking
+      ? 'Abo wird geprüft...'
+      : '';
+  renderTile('markt', allApps || marketOnly, false);
+  renderTile('heim', allApps, marketOnly);
+  renderTile('log', allApps, marketOnly);
+}
+
+function showTiles() {
+  renderTiles();
+  showScreen('tiles');
+}
+
+async function getPurchaseHistory() {
+  if (!hasDespia()) return null;
+  return despia('getpurchasehistory://', ['restoredData']);
+}
+
+async function refreshPurchaseAccess(options = {}) {
+  const { redirectToPaywall = true } = options;
+  if (state.reviewer) {
+    applyAccess({ bundle: true, single: true });
+    showTiles();
+    return true;
+  }
+
+  state.access = { ...state.access, checking: true };
+  renderTiles();
+
+  try {
+    const history = await getPurchaseHistory();
+    const purchaseData = history?.restoredData || history;
+    const access = accessFromPurchaseData(purchaseData);
+
+    if (!access.bundle && !access.single && !redirectToPaywall && (state.access.bundle || state.access.single)) {
+      state.access = { ...state.access, checking: false };
+      renderTiles();
+      return false;
+    }
+
+    applyAccess(access);
+
+    if (!access.bundle && !access.single) {
+      if (redirectToPaywall) showPaywall(true);
+      return false;
+    }
+
+    showTiles();
+    return true;
+  } catch (error) {
+    state.access = { bundle: false, single: false, checking: false };
+    renderTiles();
+    if (redirectToPaywall) {
+      showPaywall(false);
+      paywallStatus.textContent = 'Abo konnte nicht geprüft werden. Bitte erneut versuchen.';
+    }
+    return false;
+  }
+}
+
+async function completeAppleLogin(payload) {
+  const token = extractToken(payload);
+  if (!token) throw new Error('Kein Token erhalten.');
+  setToken(token, extractUserId(payload));
+  await saveVaultToken(token);
+  showPaywall(true);
+}
+
+async function handleClerkPayload(payload) {
+  if (!payload || payload.ok === false || payload.error) {
+    const message = payload?.error?.message || payload?.message || 'Apple Anmeldung fehlgeschlagen.';
+    throw new Error(message);
+  }
+
+  const token = extractToken(payload);
+  if (token) {
+    await completeAppleLogin(payload);
+    return;
+  }
+
+  if ((payload.event === 'signIn' || payload.event === 'signUp' || payload.event === 'authview') && payload.status === 'complete' && hasDespia()) {
+    const tokenPayload = await despia('clerk://token');
+    await completeAppleLogin(tokenPayload);
+  }
 }
 
 window.onClerkEvent = (payload) => {
-  if (!payload || payload.ok === false) {
-    setBusy(false);
-    setStatus((payload && payload.error && payload.error.message) || 'Apple Anmeldung fehlgeschlagen.');
-    return;
-  }
-
-  if (payload.event === 'signIn' || payload.event === 'signUp' || payload.event === 'authview') {
-    if (payload.status === 'complete' && typeof window.despia === 'function') {
-      window.despia('clerk://token');
-    }
-  }
-
-  if (payload.event === 'token') {
-    handleClerkToken(payload);
-  }
+  handleClerkPayload(payload)
+    .catch((error) => {
+      setLoginBusy(false);
+      loginStatus.textContent = error.message || 'Apple Anmeldung fehlgeschlagen.';
+    });
 };
 
-appleLogin.addEventListener('click', async () => {
-  if (!isDespia || typeof window.despia !== 'function') {
-    setStatus('Apple Sign-In ist nur in der Despia App verfügbar.');
+window.onRevenueCatPurchase = async (payload) => {
+  const access = accessFromPurchaseData(payload);
+  if (access.bundle || access.single) {
+    applyAccess(access);
+  } else {
+    applyAccess({ bundle: true, single: true });
+  }
+  showTiles();
+  await refreshPurchaseAccess({ redirectToPaywall: false });
+};
+
+async function launchPaywall() {
+  if (!hasDespia()) {
+    paywallStatus.textContent = 'Paywall ist nur in der Despia App verfügbar.';
     return;
   }
 
-  setBusy(true);
-  setStatus('');
+  setPaywallBusy(true);
+  paywallStatus.textContent = '';
 
   try {
-    await window.despia('clerk://apple');
-  } catch (error) {
-    try {
-      await window.despia('clerk://manual?method=apple');
-    } catch (fallbackError) {
-      setBusy(false);
-      setStatus((fallbackError && fallbackError.message) || 'Apple Anmeldung fehlgeschlagen.');
+    const payload = await despia(`revenuecat://launchPaywall?external_id=${getExternalId()}&offering=default`);
+    if (payload?.purchased || payload?.success || payload?.restoredData) {
+      await window.onRevenueCatPurchase(payload);
     }
-  }
-});
-
-emailLogin.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  setBusy(true);
-  setStatus('');
-
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-
-    await completeLogin(data.session && data.session.access_token);
   } catch (error) {
-    setBusy(false);
-    setStatus((error && error.message) || 'Login fehlgeschlagen.');
+    paywallStatus.textContent = error?.message || 'Paywall konnte nicht geöffnet werden.';
+  } finally {
+    setPaywallBusy(false);
   }
-});
+}
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const token = await readVaultToken();
+async function openRevenueCatCenter() {
+  if (!hasDespia()) return;
+  try {
+    await despia(`revenuecat://center?external_id=${getExternalId()}`);
+    await refreshPurchaseAccess({ redirectToPaywall: false });
+  } catch (error) {
+    tilesStatus.textContent = 'Abo-Verwaltung konnte nicht geöffnet werden.';
+  }
+}
+
+function openReviewerModal() {
+  reviewerStatus.textContent = '';
+  reviewerSubmit.disabled = false;
+  reviewerModal.classList.add('active');
+  window.setTimeout(() => document.getElementById('reviewer-password').focus(), 120);
+}
+
+function closeReviewerModal() {
+  reviewerModal.classList.remove('active');
+}
+
+function setupReviewerAccess() {
+  let tapCount = 0;
+  let tapTimer = 0;
+  document.querySelectorAll('[data-secret-logo]').forEach((logo) => {
+    logo.addEventListener('click', () => {
+      tapCount += 1;
+      window.clearTimeout(tapTimer);
+      tapTimer = window.setTimeout(() => {
+        tapCount = 0;
+      }, 1600);
+      if (tapCount >= 5) {
+        tapCount = 0;
+        openReviewerModal();
+      }
+    });
+  });
+}
+
+function setupEvents() {
+  appleLogin.addEventListener('click', async () => {
+    if (!hasDespia()) {
+      loginStatus.textContent = 'Apple Sign-In ist nur in der Despia App verfügbar.';
+      return;
+    }
+
+    setLoginBusy(true);
+    loginStatus.textContent = '';
+
+    try {
+      const payload = await despia('clerk://apple');
+      if (payload) await handleClerkPayload(payload);
+    } catch (error) {
+      setLoginBusy(false);
+      loginStatus.textContent = error?.message || 'Apple Anmeldung fehlgeschlagen.';
+    }
+  });
+
+  paywallButton.addEventListener('click', () => launchPaywall());
+  restoreButton.addEventListener('click', () => refreshPurchaseAccess({ redirectToPaywall: false }));
+  accountButton.addEventListener('click', () => openRevenueCatCenter());
+
+  ['markt', 'heim', 'log'].forEach((id) => {
+    document.getElementById(`tile-${id}`).addEventListener('click', () => {
+      const tile = document.getElementById(`tile-${id}`);
+      if (state.access.checking) return;
+      if (tile.dataset.locked === 'true') {
+        showPaywall(true);
+        return;
+      }
+      window.location.assign(APP_URLS[id]);
+    });
+  });
+
+  document.getElementById('reviewer-close').addEventListener('click', closeReviewerModal);
+  reviewerModal.addEventListener('click', (event) => {
+    if (event.target === reviewerModal) closeReviewerModal();
+  });
+  reviewerForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    reviewerSubmit.disabled = true;
+    reviewerStatus.textContent = '';
+
+    const email = document.getElementById('reviewer-email').value.trim();
+    const password = document.getElementById('reviewer-password').value;
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      state.reviewer = true;
+      setToken(data.session?.access_token || '', data.user?.id || '');
+      closeReviewerModal();
+      applyAccess({ bundle: true, single: true });
+      showTiles();
+    } catch (error) {
+      reviewerSubmit.disabled = false;
+      reviewerStatus.textContent = error?.message || 'Reviewer Login fehlgeschlagen.';
+    }
+  });
+}
+
+async function init() {
+  setupEvents();
+  setupReviewerAccess();
+
+  const [token] = await Promise.all([
+    readVaultToken(),
+    delay(SPLASH_MS)
+  ]);
 
   if (token) {
-    renderTiles(token);
+    setToken(token);
+    showTiles();
+    await refreshPurchaseAccess({ redirectToPaywall: true });
     return;
   }
 
   showLogin();
-});
+}
+
+init();
 </script>
 </body>
 </html>
