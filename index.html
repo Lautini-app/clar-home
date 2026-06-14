@@ -240,15 +240,6 @@ function delay(ms) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
-function withTimeout(promise, ms, message) {
-  let timeoutId = 0;
-  const timeout = new Promise((_, reject) => {
-    timeoutId = window.setTimeout(() => reject(new Error(message)), ms);
-  });
-  return Promise.race([promise, timeout])
-    .finally(() => window.clearTimeout(timeoutId));
-}
-
 function showScreen(name) {
   Object.entries(screens).forEach(([screenName, element]) => {
     element.classList.toggle('active', screenName === name);
@@ -319,16 +310,6 @@ function extractToken(payload) {
 function extractUserId(payload) {
   if (!payload || typeof payload !== 'object') return '';
   return payload.user_id || payload.userId || payload.external_id || payload.user?.id || payload.data?.user?.id || '';
-}
-
-async function readVaultToken() {
-  if (!hasDespia()) return '';
-  try {
-    const result = await despia(`readvault://?key=${VAULT_KEY}`, [VAULT_KEY]);
-    return extractToken(result);
-  } catch (error) {
-    throw new Error(error?.message || 'Vault konnte nicht gelesen werden.');
-  }
 }
 
 async function saveVaultToken(token) {
@@ -679,26 +660,7 @@ async function init() {
   setupEvents();
   setupReviewerAccess();
 
-  const splash = delay(SPLASH_MS);
-  let token = '';
-  try {
-    [token] = await Promise.all([
-      withTimeout(readVaultToken(), SPLASH_MS, 'Vault konnte nicht gelesen werden.'),
-      splash
-    ]);
-  } catch (error) {
-    await splash;
-    showLogin();
-    return;
-  }
-
-  if (token) {
-    setToken(token);
-    showTiles();
-    await refreshPurchaseAccess({ redirectToPaywall: true });
-    return;
-  }
-
+  await delay(SPLASH_MS);
   showLogin();
 }
 
