@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>clar</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { background: #F5F3EE; font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-height: 100vh; }
+.container { max-width: 430px; margin: 0 auto; padding-bottom: 40px; }
+.header { padding: 56px 20px 20px; }
+.logo { font-size: 44px; font-weight: 700; color: #1C2E1C; letter-spacing: -1px; line-height: 1; }
+.logo span { color: #2E5C3E; }
+.hello { font-size: 13px; color: #888; font-weight: 500; margin-top: 16px; margin-bottom: 4px; }
+.title { font-size: 26px; font-weight: 700; color: #1C2E1C; }
+.section { font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px; padding: 20px 20px 8px; text-transform: uppercase; }
+.tile { display: flex; align-items: center; background: #fff; margin: 0 16px 10px; border-radius: 14px; padding: 14px 16px; border: 0.5px solid #E8E6E1; gap: 14px; cursor: pointer; text-decoration: none; -webkit-touch-callout: none; }
+.tile:active { transform: scale(0.98); background: #FAFAF8; }
+.tile.dim { opacity: 0.5; pointer-events: none; }
+.icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+.tile-body { flex: 1; min-width: 0; }
+.tile-name { font-size: 16px; font-weight: 700; color: #1C2E1C; display: flex; align-items: center; gap: 8px; }
+.tile-tag { font-size: 13px; color: #888; margin-top: 2px; }
+.chevron { font-size: 22px; color: #CCC; flex-shrink: 0; }
+.badge { font-size: 11px; font-weight: 600; border-radius: 6px; padding: 2px 7px; }
+.badge-beta { color: #5B7AAE; background: #5B7AAE18; }
+.badge-soon { color: #AAA; background: #F0EEE9; }
+.footer { text-align: center; color: #BBB; font-size: 12px; padding: 32px 20px 20px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">clar<span>·</span></div>
+    <div class="hello">Hallo</div>
+    <div class="title">Deine clar·Apps</div>
+  </div>
+
+  <div class="section">Aktiv</div>
+
+  <a class="tile" href="https://clar.markt.lautini.ch/app">
+    <div class="icon" style="background:#C97B3A18;">🛒</div>
+    <div class="tile-body">
+      <div class="tile-name">clar·markt</div>
+      <div class="tile-tag">Einkaufsplanung</div>
+    </div>
+    <div class="chevron">›</div>
+  </a>
+
+  <a class="tile" href="https://clar.heim.lautini.ch/heute">
+    <div class="icon" style="background:#2E5C3E18;">🏠</div>
+    <div class="tile-body">
+      <div class="tile-name">clar·heim</div>
+      <div class="tile-tag">Haushaltsorganisation</div>
+    </div>
+    <div class="chevron">›</div>
+  </a>
+
+  <a class="tile" href="https://clar.log.lautini.ch">
+    <div class="icon" style="background:#5B7AAE18;">📖</div>
+    <div class="tile-body">
+      <div class="tile-name">clar·log <span class="badge badge-beta">beta</span></div>
+      <div class="tile-tag">Stimulanzien-Tagebuch</div>
+    </div>
+    <div class="chevron">›</div>
+  </a>
+
+  <div class="section">Demnächst</div>
+
+  <div class="tile dim">
+    <div class="icon" style="background:#F0EEE9;">🕐</div>
+    <div class="tile-body">
+      <div class="tile-name">clar·tag <span class="badge badge-soon">bald</span></div>
+      <div class="tile-tag">Tagesstruktur & Routinen</div>
+    </div>
+  </div>
+
+  <div class="footer">clar by lautini</div>
+</div>
+</body>
+</html>
