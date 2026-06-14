@@ -32,7 +32,8 @@ button{border:0;background:none;color:inherit;cursor:pointer;}
 .login,.paywall,.tiles{background:var(--paper);}
 .center-screen{align-items:center;justify-content:center;padding:calc(var(--safe-area-top) + 1.25rem) 1.25rem calc(var(--safe-area-bottom) + 1.25rem);}
 .card{width:100%;max-width:26rem;background:#fff;border-radius:1.25rem;padding:1.35rem;box-shadow:0 1.1rem 2.8rem rgba(28,46,28,0.10);border:1px solid rgba(28,46,28,0.06);}
-.login-logo{font-size:3.4rem;color:var(--green);text-align:center;margin-bottom:1.5rem;}
+.login-logo{font-size:3.4rem;color:var(--green);text-align:center;}
+.login-panel{width:100%;max-width:22rem;display:flex;flex-direction:column;align-items:center;gap:1.35rem;}
 .title{font-size:1.55rem;font-weight:800;letter-spacing:-0.04em;margin-bottom:0.45rem;}
 .copy{font-size:0.95rem;line-height:1.45;color:var(--muted);margin-bottom:1.2rem;}
 .apple-button{width:100%;min-height:3.25rem;border-radius:0.75rem;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;gap:0.55rem;font-size:1rem;font-weight:600;}
@@ -42,7 +43,6 @@ button{border:0;background:none;color:inherit;cursor:pointer;}
 .apple-button:active,.primary-button:active,.secondary-button:active,.tile:active,.icon-button:active{transform:scale(0.98);}
 button:disabled{opacity:0.55;cursor:default;transform:none!important;}
 .message{min-height:1.2rem;margin-top:0.85rem;color:#A85738;font-size:0.82rem;line-height:1.4;text-align:center;}
-.reviewer-hint{position:fixed;left:0;right:0;bottom:calc(var(--safe-area-bottom) + 1rem);text-align:center;color:#A5A9A2;font-size:0.78rem;font-weight:600;letter-spacing:0.02em;}
 .paywall-actions{display:flex;flex-direction:column;gap:0.75rem;margin-top:1rem;}
 .app-header{padding:calc(var(--safe-area-top) + 1rem) 1.1rem 0.75rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--paper);border-bottom:1px solid rgba(28,46,28,0.06);}
 .header-logo{font-size:2.15rem;color:var(--green);}
@@ -89,17 +89,14 @@ button:disabled{opacity:0.55;cursor:default;transform:none!important;}
   </section>
 
   <section id="login-screen" class="screen login center-screen" aria-label="Anmeldung">
-    <div class="logo login-logo" data-secret-logo>clar<span class="logo-dot">·</span></div>
-    <div class="card">
-      <h1 class="title">Willkommen</h1>
-      <p id="login-copy" class="copy">Melde dich mit Apple an, um deine clar·Apps zu öffnen.</p>
+    <div class="login-panel">
+      <div class="logo login-logo" data-secret-logo>clar<span class="logo-dot">·</span></div>
       <button id="apple-login" class="apple-button" type="button" aria-label="Mit Apple anmelden">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16.365 1.43c0 1.14-.47 2.16-1.22 2.94-.8.84-2.1 1.49-3.15 1.4-.14-1.1.4-2.25 1.12-3 .8-.82 2.2-1.44 3.25-1.34zM20.5 17.52c-.55 1.27-.82 1.84-1.52 2.96-.98 1.5-2.35 3.38-4.06 3.4-1.52.02-1.91-.99-3.98-.98-2.06 0-2.5 1-4.02.98-1.71-.02-3.01-1.7-3.99-3.2-2.72-4.18-3-9.08-1.33-11.69 1.2-1.87 3.08-2.96 4.85-2.96 1.8 0 2.93.99 4.42.99 1.45 0 2.33-.99 4.42-.99 1.58 0 3.25.86 4.43 2.34-3.9 2.14-3.27 7.7.78 9.15z"/></svg>
         Mit Apple anmelden
       </button>
       <div id="login-status" class="message" role="status" aria-live="polite"></div>
     </div>
-    <div class="reviewer-hint">Reviewer Access</div>
   </section>
 
   <section id="paywall-screen" class="screen paywall center-screen" aria-label="Abo freischalten">
@@ -224,7 +221,6 @@ const screens = {
   tiles: document.getElementById('tiles-screen')
 };
 const appleLogin = document.getElementById('apple-login');
-const loginCopy = document.getElementById('login-copy');
 const loginStatus = document.getElementById('login-status');
 const paywallButton = document.getElementById('paywall-button');
 const restoreButton = document.getElementById('restore-button');
@@ -235,19 +231,6 @@ const reviewerModal = document.getElementById('reviewer-modal');
 const reviewerForm = document.getElementById('reviewer-form');
 const reviewerSubmit = document.getElementById('reviewer-submit');
 const reviewerStatus = document.getElementById('reviewer-status');
-
-function delay(ms) {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-function withTimeout(promise, ms, message) {
-  let timeoutId = 0;
-  const timeout = new Promise((_, reject) => {
-    timeoutId = window.setTimeout(() => reject(new Error(message)), ms);
-  });
-  return Promise.race([promise, timeout])
-    .finally(() => window.clearTimeout(timeoutId));
-}
 
 function showScreen(name) {
   Object.entries(screens).forEach(([screenName, element]) => {
@@ -321,16 +304,6 @@ function extractUserId(payload) {
   return payload.user_id || payload.userId || payload.external_id || payload.user?.id || payload.data?.user?.id || '';
 }
 
-async function readVaultToken() {
-  if (!hasDespia()) return '';
-  try {
-    const result = await despia(`readvault://?key=${VAULT_KEY}`, [VAULT_KEY]);
-    return extractToken(result);
-  } catch (error) {
-    throw new Error(error?.message || 'Vault konnte nicht gelesen werden.');
-  }
-}
-
 async function saveVaultToken(token) {
   if (!token || !hasDespia()) return;
   const value = encodeURIComponent(token);
@@ -340,10 +313,6 @@ async function saveVaultToken(token) {
 function showLogin() {
   setLoginBusy(false);
   loginStatus.textContent = '';
-  appleLogin.style.display = hasDespia() ? 'flex' : 'none';
-  loginCopy.textContent = hasDespia()
-    ? 'Melde dich mit Apple an, um deine clar·Apps zu öffnen.'
-    : 'Apple Sign-In ist nur in der Despia App verfügbar.';
   showScreen('login');
 }
 
@@ -675,31 +644,10 @@ function setupEvents() {
   });
 }
 
-async function init() {
+function init() {
   setupEvents();
   setupReviewerAccess();
-
-  const splash = delay(SPLASH_MS);
-  let token = '';
-  try {
-    [token] = await Promise.all([
-      withTimeout(readVaultToken(), SPLASH_MS, 'Vault konnte nicht gelesen werden.'),
-      splash
-    ]);
-  } catch (error) {
-    await splash;
-    showLogin();
-    return;
-  }
-
-  if (token) {
-    setToken(token);
-    showTiles();
-    await refreshPurchaseAccess({ redirectToPaywall: true });
-    return;
-  }
-
-  showLogin();
+  window.setTimeout(showLogin, SPLASH_MS);
 }
 
 init();
