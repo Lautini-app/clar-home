@@ -16,13 +16,45 @@ body{display:grid;place-items:center;min-height:100vh;padding:2rem;}
 .home{display:flex;width:100%;max-width:22rem;flex-direction:column;align-items:center;gap:1.5rem;}
 .logo{font-size:4rem;font-weight:800;letter-spacing:-0.07em;line-height:0.9;}
 .apple-button{width:100%;min-height:3.25rem;border:0;border-radius:0.75rem;background:#000;color:#fff;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;}
+.apple-button:disabled{cursor:not-allowed;opacity:0.5;}
 .apple-button:active{transform:scale(0.98);}
 </style>
 </head>
 <body>
 <main class="home">
   <div class="logo" aria-label="clar">clar·</div>
-  <button class="apple-button" type="button" onclick="window.despia && window.despia('clerk://apple')">Mit Apple anmelden</button>
+  <button class="apple-button" type="button" id="apple-sign-in" disabled>Mit Apple anmelden</button>
 </main>
+<script>
+(() => {
+  const CLERK_CONFIG_URL = "clerk://configure?key=pk_test_bGl2ZS1tYW1tb3RoLTYxLmNsZXJrLmFjY291bnRzLmRldiQ";
+  const CLERK_APPLE_URL = "clerk://apple";
+  const appleButton = document.getElementById("apple-sign-in");
+
+  let clerkReady = false;
+
+  const getEventType = (event) => {
+    if (typeof event === "string") return event;
+    if (!event || typeof event !== "object") return "";
+    return event.type || event.event || event.name || "";
+  };
+
+  window.onClerkEvent = (event) => {
+    if (getEventType(event) === "ready") {
+      clerkReady = true;
+      appleButton.disabled = false;
+    }
+  };
+
+  appleButton.addEventListener("click", () => {
+    if (!clerkReady || typeof window.despia !== "function") return;
+    window.despia(CLERK_APPLE_URL);
+  });
+
+  if (typeof window.despia === "function") {
+    window.despia(CLERK_CONFIG_URL);
+  }
+})();
+</script>
 </body>
 </html>
