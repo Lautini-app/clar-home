@@ -634,17 +634,23 @@ async function startCheckout() {
   renderPaywall();
 
   try {
-    const { data, error } = await supabase.functions.invoke('create-checkout', {
-      body: {
+    const response = await fetch('https://cgwpzpnklxphqxlixtva.supabase.co/functions/v1/create-checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${state.session.access_token}`
+      },
+      body: JSON.stringify({
         price_id: priceId,
         selected_apps: getSelectedCheckoutApps(),
         user_id: state.session.user.id,
         success_url: CHECKOUT_SUCCESS_URL,
         cancel_url: CHECKOUT_CANCEL_URL
-      }
+      })
     });
 
-    if (error) throw error;
+    if (!response.ok) throw new Error(`Edge Function Fehler: ${response.status}`);
+    const data = await response.json();
 
     const checkoutUrl = data?.url || data?.checkout_url || data?.session_url;
     if (!checkoutUrl) throw new Error('Keine Checkout-URL erhalten.');
