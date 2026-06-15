@@ -48,7 +48,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .text-button{min-height:auto;border:0;background:transparent;color:var(--green);font-weight:700;text-decoration:underline;text-underline-offset:.18rem;}
 .status{min-height:1.25rem;color:var(--muted);font-size:.9rem;line-height:1.35;text-align:center;}
 .status.error{color:var(--danger);}
-.tiles{display:grid;width:100%;max-width:34rem;grid-template-columns:1fr;gap:.85rem;}
+.tiles{display:flex;width:100%;max-width:34rem;flex-direction:column;gap:.85rem;}
 .tile{display:flex;min-height:6.5rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:1.35rem;background:rgba(245,243,238,.86);padding:1.1rem;text-decoration:none;color:var(--text);box-shadow:0 .8rem 2rem rgba(46,92,62,.09);}
 .tile:not(.locked):active{transform:scale(.99);}
 .tile-name{font-size:1.35rem;font-weight:800;letter-spacing:-.04em;color:var(--green);}
@@ -58,18 +58,14 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .lock svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
 .unlock-button{border:1px solid var(--green);background:transparent;color:var(--green);padding:0 .9rem;min-height:2.55rem;}
 .soon{opacity:.72;}
-.topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:center;margin-bottom:1rem;}
 .topbar .logo{font-size:2rem;}
-.signout{border:0;background:transparent;color:var(--green);font-size:.92rem;font-weight:700;}
 .modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
 .modal-backdrop.active{display:flex;}
 .modal{width:100%;max-width:23rem;border-radius:1.35rem;background:var(--paper);padding:1.2rem;box-shadow:0 1.5rem 4rem rgba(28,46,28,.24);}
 .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
 .close{border:0;background:transparent;color:var(--green);font-size:1.4rem;line-height:1;}
 .hidden{display:none!important;}
-@media (min-width:42rem){
-  .tiles{grid-template-columns:1fr 1fr;}
-}
 </style>
 </head>
 <body>
@@ -181,7 +177,6 @@ button:disabled{cursor:not-allowed;opacity:.58;}
     <div class="stack center" style="max-width:34rem">
       <div class="topbar">
         <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
-        <button id="signout" class="signout" type="button">Abmelden</button>
       </div>
       <div>
         <h1 id="tiles-title" class="title">Deine clar Apps</h1>
@@ -232,6 +227,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const REVIEWER_EMAIL = 'reviewer@clar.app';
 const CLERK_CONFIG_URL = 'clerk://configure?key=pk_test_bGl2ZS1tYW1tb3RoLTYxLmNsZXJrLmFjY291bnRzLmRldiQ';
 const CLERK_APPLE_URL = 'clerk://apple';
+const REVENUECAT_OFFERING = 'default';
 const SPLASH_MS = 1500;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -247,29 +243,22 @@ const apps = [
     key: 'markt',
     aliases: ['markt', 'clar.markt', 'clar-markt'],
     name: 'clar·markt',
-    description: 'Markt oeffnen',
+    description: 'Einkaufsplanung',
     url: 'https://clar.markt.lautini.ch/app'
   },
   {
     key: 'heim',
     aliases: ['heim', 'clar.heim', 'clar-heim'],
     name: 'clar·heim',
-    description: 'Heute ansehen',
+    description: 'Haushaltsorganisation',
     url: 'https://clar.heim.lautini.ch/heute'
   },
   {
     key: 'log',
     aliases: ['log', 'clar.log', 'clar-log'],
     name: 'clar·log',
-    description: 'Log oeffnen',
+    description: 'Stimulanzien-Tagebuch beta',
     url: 'https://clar.log.lautini.ch'
-  },
-  {
-    key: 'tag',
-    aliases: ['tag', 'clar.tag', 'clar-tag'],
-    name: 'clar·tag',
-    description: 'Bald verfuegbar',
-    soon: true
   }
 ];
 
@@ -307,6 +296,12 @@ window.onClerkEvent = (event) => {
   if (appleButton) appleButton.disabled = false;
 };
 
+window.onRevenueCatPurchase = () => {
+  if (isDespia && state.session) checkEntitlements();
+};
+
+window.onRevenueCatRestore = window.onRevenueCatPurchase;
+
 function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove('active'));
   screens[name].classList.add('active');
@@ -339,11 +334,22 @@ async function initialRoute() {
 
   window.setTimeout(() => {
     if (state.session) {
-      checkEntitlements();
+      routeAfterLogin();
     } else {
       showScreen('login');
     }
   }, SPLASH_MS);
+}
+
+async function routeAfterLogin() {
+  if (isDespia) {
+    await checkEntitlements();
+    return;
+  }
+
+  state.entitlements = [];
+  state.entitlementLoadError = false;
+  renderTiles();
 }
 
 function configureLoginMode() {
@@ -362,7 +368,15 @@ function configureLoginMode() {
     if (typeof window.despia === 'function') {
       window.despia(CLERK_CONFIG_URL);
     }
+
+    return;
   }
+
+  loginForm.classList.remove('hidden');
+  registerLink.classList.remove('hidden');
+  appleButton.classList.add('hidden');
+  appleButton.disabled = true;
+  copy.textContent = 'Melde dich mit Email und Passwort an, um deine clar Apps zu oeffnen.';
 }
 
 async function restoreSessionFromUrl() {
@@ -415,6 +429,11 @@ async function checkEntitlements() {
     return;
   }
 
+  if (!isDespia) {
+    renderTiles();
+    return;
+  }
+
   showScreen('entitlement');
   setStatus('entitlement-status', 'Wir pruefen deine Freischaltungen.');
 
@@ -426,14 +445,7 @@ async function checkEntitlements() {
   }
 
   try {
-    const { data, error } = await supabase
-      .from('entitlements')
-      .select('*')
-      .eq('user_id', state.session.user.id);
-
-    if (error) throw error;
-
-    state.entitlements = Array.isArray(data) ? data : [];
+    state.entitlements = await loadRevenueCatEntitlements();
     state.entitlementLoadError = false;
     renderTiles();
   } catch (_error) {
@@ -449,13 +461,15 @@ function renderTiles() {
   tiles.textContent = '';
 
   const hasAnyEntitlement = state.reviewer || state.entitlements.some(isActiveEntitlement);
-  copy.textContent = state.reviewer
+  copy.textContent = !isDespia
+    ? 'Waehle eine App aus.'
+    : state.reviewer
     ? 'Reviewer-Zugang aktiv: alle Apps sind freigeschaltet.'
     : state.entitlementLoadError
-      ? 'Freischaltungen konnten nicht geladen werden. Alle Apps sind gesperrt - tippe auf Freischalten.'
+      ? 'RevenueCat konnte nicht geladen werden. Alle Apps sind gesperrt - tippe auf Freischalten.'
     : hasAnyEntitlement
       ? 'Waehle eine App aus.'
-      : 'Noch kein aktives Abo gefunden. Alle Apps sind gesperrt - tippe auf Freischalten.';
+      : 'Noch kein aktives Abo gefunden. Tippe auf Freischalten, um die RevenueCat Paywall zu oeffnen.';
 
   apps.forEach((app) => {
     tiles.appendChild(createTile(app));
@@ -465,7 +479,7 @@ function renderTiles() {
 }
 
 function createTile(app) {
-  const unlocked = !app.soon && hasAppEntitlement(app);
+  const unlocked = !app.soon && (!isDespia || hasAppEntitlement(app));
   const tile = document.createElement(unlocked ? 'a' : 'div');
   tile.className = `tile${unlocked ? '' : ' locked'}${app.soon ? ' soon' : ''}`;
 
@@ -496,8 +510,8 @@ function createTile(app) {
     unlock.className = 'unlock-button';
     unlock.type = 'button';
     unlock.textContent = 'Freischalten';
-    unlock.addEventListener('click', () => {
-      startCheckout(app);
+    unlock.addEventListener('click', async () => {
+      await startCheckout(app);
     });
 
     action.append(lock, unlock);
@@ -507,8 +521,76 @@ function createTile(app) {
   return tile;
 }
 
-function startCheckout(app) {
-  window.alert(`${app.name} ist noch gesperrt. Stripe Checkout folgt.`);
+async function startCheckout(app) {
+  if (!isDespia || !state.session) return;
+
+  try {
+    const paywallUrl = buildRevenueCatPaywallUrl(app);
+    if (typeof window.despia === 'function') {
+      await window.despia(paywallUrl);
+      return;
+    }
+
+    window.location.href = paywallUrl;
+  } catch (_error) {
+    window.alert('RevenueCat Paywall konnte nicht geoeffnet werden.');
+  }
+}
+
+async function loadRevenueCatEntitlements() {
+  if (typeof window.despia !== 'function') {
+    throw new Error('Despia bridge unavailable');
+  }
+
+  try {
+    delete window.restoredData;
+  } catch (_error) {
+    window.restoredData = undefined;
+  }
+
+  const result = await window.despia('getpurchasehistory://', ['restoredData']);
+  const purchases = normalizeRevenueCatPurchases(result?.restoredData ?? result ?? window.restoredData);
+  return purchases.map((purchase) => {
+    const item = purchase && typeof purchase === 'object' ? purchase : { product: purchase };
+
+    return {
+      app: item.entitlementId || item.entitlementIdentifier || item.entitlement || item.productIdentifier || item.productId || item.product || 'all',
+      active: item.isActive !== false && item.active !== false,
+      expires_at: item.expirationDate || item.expiresAt || item.expires_at || item.currentPeriodEnd
+    };
+  });
+}
+
+function normalizeRevenueCatPurchases(value) {
+  if (Array.isArray(value)) return value;
+
+  if (typeof value === 'string') {
+    try {
+      return normalizeRevenueCatPurchases(JSON.parse(value));
+    } catch (_error) {
+      return [];
+    }
+  }
+
+  if (value && typeof value === 'object') {
+    if (value.entitlementId || value.entitlement || value.productIdentifier || value.productId || value.product || value.isActive !== undefined) {
+      return [value];
+    }
+
+    const nested = value.restoredData || value.entitlements || value.purchases || value.activeSubscriptions;
+    return nested ? normalizeRevenueCatPurchases(nested) : Object.values(value);
+  }
+
+  return [];
+}
+
+function buildRevenueCatPaywallUrl(app) {
+  const params = new URLSearchParams({
+    external_id: state.session.user.id,
+    offering: app.revenueCatOffering || REVENUECAT_OFFERING
+  });
+
+  return `revenuecat://launchPaywall?${params.toString()}`;
 }
 
 function createLockIcon() {
@@ -536,7 +618,7 @@ function hasAppEntitlement(app) {
     if (!appValue) return true;
 
     const normalized = String(appValue).toLowerCase();
-    return normalized === 'all' || app.aliases.some((alias) => normalized.includes(alias));
+    return ['all', 'premium', 'pro'].includes(normalized) || app.aliases.some((alias) => normalized.includes(alias));
   });
 }
 
@@ -635,7 +717,7 @@ function wireEvents() {
 
     try {
       await signIn(byId('login-email').value.trim(), byId('login-password').value);
-      await checkEntitlements();
+      await routeAfterLogin();
     } catch (error) {
       setStatus('login-status', error.message || 'Anmeldung fehlgeschlagen.', true);
     } finally {
@@ -659,7 +741,7 @@ function wireEvents() {
 
     try {
       await signUp(byId('register-email').value.trim(), password);
-      await checkEntitlements();
+      await routeAfterLogin();
     } catch (error) {
       setStatus('register-status', error.message || 'Registrierung fehlgeschlagen.', true);
     } finally {
@@ -684,21 +766,12 @@ function wireEvents() {
       await signIn(email, byId('reviewer-password').value);
       state.reviewer = true;
       closeReviewerModal();
-      await checkEntitlements();
+      await routeAfterLogin();
     } catch (error) {
       setStatus('reviewer-status', error.message || 'Reviewer-Anmeldung fehlgeschlagen.', true);
     } finally {
       setBusy(button, false);
     }
-  });
-
-  byId('signout').addEventListener('click', async () => {
-    await supabase.auth.signOut();
-    state.session = null;
-    state.entitlements = [];
-    state.entitlementLoadError = false;
-    state.reviewer = false;
-    showScreen('login');
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
