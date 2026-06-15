@@ -669,7 +669,8 @@ async function initialRoute() {
   await loadAccess();
   renderTiles();
   showScreen('tiles');
-  updateLoginButton();
+  const _btn = byId('open-login');
+  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
 }
 
 async function routeAfterLogin() {
@@ -681,7 +682,8 @@ async function routeAfterLogin() {
   await loadAccess();
   renderTiles();
   showScreen('tiles');
-  updateLoginButton();
+  const _btn = byId('open-login');
+  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
 }
 
 async function restoreStoredSession() {
