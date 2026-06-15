@@ -840,11 +840,17 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const tile = document.createElement(app.url ? 'a' : 'div');
-  tile.className = `tile${app.soon ? ' soon' : ''}`;
+  const hasAccess = app.soon ? false : hasAppAccess(app);
+  const isLocked = !app.soon && !hasAccess;
+  const tile = document.createElement(hasAccess ? 'a' : 'div');
+  tile.className = `tile${app.soon ? ' soon' : ''}${isLocked ? ' locked' : ''}`;
 
-  if (app.url) {
+  if (hasAccess && app.url) {
     tile.href = withSessionTokens(app.url);
+    tile.style.cursor = 'pointer';
+  } else if (isLocked) {
+    tile.style.cursor = 'pointer';
+    tile.addEventListener('click', () => showScreen('paywall'));
   }
 
   const body = document.createElement('div');
@@ -872,9 +878,11 @@ function createTile(app) {
     soon.className = 'soon-badge';
     soon.textContent = 'bald';
     action.appendChild(soon);
+  } else if (isLocked) {
+    action.appendChild(createActionText('🔒'));
+  } else {
+    action.appendChild(createActionText('›'));
   }
-
-  action.appendChild(createActionText('›'));
   tile.append(body, action);
   return tile;
 }
