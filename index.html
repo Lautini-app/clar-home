@@ -954,8 +954,9 @@ function normalizeAppToken(value) {
 
 function withSessionTokens(url) {
   const target = new URL(url);
-  if (state.session?.access_token) target.searchParams.set('access_token', state.session.access_token);
-  if (state.session?.refresh_token) target.searchParams.set('refresh_token', state.session.refresh_token);
+  if (state.session?.access_token && state.session?.refresh_token) {
+    target.hash = 'access_token=' + encodeURIComponent(state.session.access_token) + '&refresh_token=' + encodeURIComponent(state.session.refresh_token) + '&type=clar_sso';
+  }
   return target.toString();
 }
 
