@@ -1040,12 +1040,10 @@ function wireEvents() {
     try {
       const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
-      if (data.session) {
-        state.session = data.session;
-        await routeAfterLogin();
-      } else {
-        setStatus('register-status', 'Bitte bestätige deine Email-Adresse.');
-      }
+      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+      if (loginError) throw loginError;
+      state.session = loginData.session;
+      await routeAfterLogin();
     } catch (err) {
       setStatus('register-status', err.message || 'Registrierung fehlgeschlagen.', true);
     } finally {
