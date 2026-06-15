@@ -678,10 +678,10 @@ async function routeAfterLogin() {
     return;
   }
 
-  showScreen('entitlement');
-  setStatus('entitlement-status', 'Wir prüfen deine Freischaltungen.');
   await loadAccess();
   renderTiles();
+  showScreen('tiles');
+  if (typeof updateLoginButton === 'function') updateLoginButton();
 }
 
 async function restoreStoredSession() {
