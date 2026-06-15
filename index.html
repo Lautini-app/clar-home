@@ -435,6 +435,17 @@ const state = {
 };
 
 const byId = (id) => document.getElementById(id);
+
+function updateLoginButton() {
+  const btn = byId('open-login');
+  if (state.session) {
+    btn.textContent = 'Abmelden';
+    btn.style.display = '';
+  } else {
+    btn.textContent = 'Anmelden';
+    btn.style.display = '';
+  }
+}
 const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function showScreen(name) {
@@ -1025,16 +1036,6 @@ function wireEvents() {
     }
   });
 
-function updateLoginButton() {
-  const btn = byId('open-login');
-  if (state.session) {
-    btn.textContent = 'Abmelden';
-    btn.style.display = '';
-  } else {
-    btn.textContent = 'Anmelden';
-    btn.style.display = '';
-  }
-}
   byId('close-paywall').addEventListener('click', closePaywall);
 
   document.querySelectorAll('[data-billing-option]').forEach((button) => {
