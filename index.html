@@ -1002,7 +1002,7 @@ function normalizeAppToken(value) {
 
 function withSessionTokens(url) {
   const target = new URL(url);
-  // clar_embedded nicht mehr nötig - iFrame Header übernimmt Navigation
+  target.searchParams.set('clar_embedded', '1');
   if (state.session?.access_token && state.session?.refresh_token) {
     target.hash = 'access_token=' + encodeURIComponent(state.session.access_token) + '&refresh_token=' + encodeURIComponent(state.session.refresh_token) + '&type=clar_sso';
   }
