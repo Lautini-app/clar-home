@@ -285,6 +285,7 @@ const isDespia = navigator.userAgent.toLowerCase().includes('despia');
 const state = {
   session: null,
   entitlements: [],
+  entitlementLoadError: false,
   reviewer: false
 };
 
@@ -419,23 +420,27 @@ async function checkEntitlements() {
 
   if (state.reviewer) {
     state.entitlements = [{ app: 'all', active: true }];
+    state.entitlementLoadError = false;
     renderTiles();
     return;
   }
 
-  const { data, error } = await supabase
-    .from('entitlements')
-    .select('*')
-    .eq('user_id', state.session.user.id);
+  try {
+    const { data, error } = await supabase
+      .from('entitlements')
+      .select('*')
+      .eq('user_id', state.session.user.id);
 
-  if (error) {
-    setStatus('entitlement-status', 'Entitlements konnten nicht geladen werden.', true);
-    window.setTimeout(() => showScreen('login'), 1400);
-    return;
+    if (error) throw error;
+
+    state.entitlements = Array.isArray(data) ? data : [];
+    state.entitlementLoadError = false;
+    renderTiles();
+  } catch (_error) {
+    state.entitlements = [];
+    state.entitlementLoadError = true;
+    renderTiles();
   }
-
-  state.entitlements = data || [];
-  renderTiles();
 }
 
 function renderTiles() {
@@ -446,9 +451,11 @@ function renderTiles() {
   const hasAnyEntitlement = state.reviewer || state.entitlements.some(isActiveEntitlement);
   copy.textContent = state.reviewer
     ? 'Reviewer-Zugang aktiv: alle Apps sind freigeschaltet.'
+    : state.entitlementLoadError
+      ? 'Freischaltungen konnten nicht geladen werden. Alle Apps sind gesperrt - tippe auf Freischalten.'
     : hasAnyEntitlement
       ? 'Waehle eine App aus.'
-      : 'Kein aktives Abo gefunden. Stripe Checkout folgt.';
+      : 'Noch kein aktives Abo gefunden. Alle Apps sind gesperrt - tippe auf Freischalten.';
 
   apps.forEach((app) => {
     tiles.appendChild(createTile(app));
@@ -490,7 +497,7 @@ function createTile(app) {
     unlock.type = 'button';
     unlock.textContent = 'Freischalten';
     unlock.addEventListener('click', () => {
-      window.alert('Stripe Checkout folgt.');
+      startCheckout(app);
     });
 
     action.append(lock, unlock);
@@ -498,6 +505,10 @@ function createTile(app) {
 
   tile.append(text, action);
   return tile;
+}
+
+function startCheckout(app) {
+  window.alert(`${app.name} ist noch gesperrt. Stripe Checkout folgt.`);
 }
 
 function createLockIcon() {
@@ -685,6 +696,7 @@ function wireEvents() {
     await supabase.auth.signOut();
     state.session = null;
     state.entitlements = [];
+    state.entitlementLoadError = false;
     state.reviewer = false;
     showScreen('login');
   });
