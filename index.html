@@ -669,7 +669,7 @@ async function initialRoute() {
   await loadAccess();
   renderTiles();
   showScreen('tiles');
-  if (typeof updateLoginButton === 'function') updateLoginButton();
+  updateLoginButton();
 }
 
 async function routeAfterLogin() {
@@ -681,7 +681,7 @@ async function routeAfterLogin() {
   await loadAccess();
   renderTiles();
   showScreen('tiles');
-  if (typeof updateLoginButton === 'function') updateLoginButton();
+  updateLoginButton();
 }
 
 async function restoreStoredSession() {
@@ -715,7 +715,7 @@ async function signIn(email, password) {
 
   state.session = data.session;
   storeSession(data.session);
-  if (typeof updateLoginButton === 'function') updateLoginButton();
+  updateLoginButton();
   return data.session;
 }
 
@@ -851,7 +851,6 @@ function collectAppValues(value) {
 }
 
 function renderTiles() {
-  if (typeof updateLoginButton === 'function') updateLoginButton();
   const tiles = byId('tiles');
   tiles.textContent = '';
 
