@@ -715,6 +715,7 @@ async function signIn(email, password) {
 
   state.session = data.session;
   storeSession(data.session);
+  if (typeof updateLoginButton === 'function') updateLoginButton();
   return data.session;
 }
 
