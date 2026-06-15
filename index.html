@@ -1009,13 +1009,26 @@ function wireEvents() {
   });
 
   byId('open-paywall').addEventListener('click', openPaywall);
-  byId('open-login').addEventListener('click', () => showScreen('login'));
+  byId('open-login').addEventListener('click', async () => {
+    if (state.session) {
+      await supabase.auth.signOut();
+      state.session = null;
+      clearStoredSession();
+      await loadAccess();
+      renderTiles();
+      updateLoginButton();
+    } else {
+      showScreen('login');
+    }
+  });
 
 function updateLoginButton() {
   const btn = byId('open-login');
   if (state.session) {
-    btn.style.display = 'none';
+    btn.textContent = 'Abmelden';
+    btn.style.display = '';
   } else {
+    btn.textContent = 'Anmelden';
     btn.style.display = '';
   }
 }
