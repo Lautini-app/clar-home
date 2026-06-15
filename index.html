@@ -58,10 +58,36 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .tile-action{display:flex;align-items:center;gap:.55rem;color:var(--green);font-size:1.65rem;font-weight:650;line-height:1;white-space:nowrap;}
 .soon-badge{display:inline-flex;align-items:center;border-radius:999px;background:var(--soft);padding:.15rem .45rem;color:var(--muted);font-size:.66rem;font-weight:800;letter-spacing:.02em;}
 .subscription-actions{display:flex;width:100%;max-width:34rem;flex-wrap:wrap;align-items:center;justify-content:center;gap:.35rem 1rem;margin-top:.1rem;}
-.billing-button{color:var(--green);font-size:.82rem;font-weight:650;text-decoration:none;}
+.billing-button{appearance:none;border:0;background:transparent;color:var(--green);font-size:.82rem;font-weight:650;text-decoration:none;}
 .billing-button:hover,.billing-button:focus-visible,.billing-button:active{text-decoration:underline;}
 .topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:center;margin-bottom:1rem;}
 .topbar .logo{font-size:2rem;}
+.paywall-screen{align-items:stretch;justify-content:center;}
+.paywall-screen.active{display:block;}
+.paywall-shell{display:flex;width:100%;max-width:43rem;margin:0 auto;flex-direction:column;gap:1rem;}
+.paywall-header{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
+.paywall-close{display:grid;flex:0 0 auto;width:2.75rem;height:2.75rem;place-items:center;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);font-size:1.35rem;line-height:1;}
+.billing-toggle{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;border:1px solid var(--line);border-radius:14px;background:var(--soft);padding:.25rem;}
+.billing-toggle button{display:flex;min-height:3rem;align-items:center;justify-content:center;gap:.45rem;border:0;border-radius:11px;background:transparent;color:var(--muted);font-weight:750;}
+.billing-toggle button.active{background:#fff;color:var(--green);box-shadow:0 .45rem 1.2rem rgba(46,92,62,.1);}
+.recommended-badge,.plan-badge{display:inline-flex;align-items:center;border-radius:999px;background:rgba(46,92,62,.11);padding:.16rem .45rem;color:var(--green);font-size:.65rem;font-weight:800;letter-spacing:.02em;}
+.plan-grid{display:grid;gap:.8rem;}
+.plan-card{position:relative;display:flex;width:100%;align-items:flex-start;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-align:left;box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
+.plan-card.selected{border-color:var(--green);box-shadow:0 0 0 .18rem rgba(46,92,62,.12),0 .85rem 2rem rgba(46,92,62,.12);}
+.plan-copy{display:flex;min-width:0;flex-direction:column;gap:.25rem;}
+.plan-name{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;color:var(--text);}
+.plan-price{color:var(--green);font-size:1.15rem;font-weight:850;white-space:nowrap;}
+.plan-note{color:var(--muted);font-size:.86rem;line-height:1.35;}
+.app-selection{display:flex;flex-direction:column;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
+.app-options{display:grid;gap:.55rem;}
+.app-choice{display:flex;align-items:center;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:rgba(245,243,238,.56);padding:.8rem;text-align:left;}
+.app-choice input{width:1.1rem;height:1.1rem;accent-color:var(--green);}
+.app-choice.disabled{opacity:.56;}
+.app-choice-text{display:flex;min-width:0;flex:1;flex-direction:column;gap:.12rem;}
+.app-choice-title{font-weight:800;color:var(--text);}
+.app-choice-desc{color:var(--muted);font-size:.86rem;}
+.paywall-submit{width:100%;min-height:3.25rem;border:0;border-radius:14px;background:var(--green);color:var(--paper);font-weight:800;}
+.paywall-status{min-height:1.25rem;text-align:center;}
 .modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
 .modal-backdrop.active{display:flex;}
 .modal{width:100%;max-width:23rem;border-radius:1.35rem;background:var(--paper);padding:1.2rem;box-shadow:0 1.5rem 4rem rgba(28,46,28,.24);}
@@ -134,9 +160,92 @@ button:disabled{cursor:not-allowed;opacity:.58;}
       </div>
       <div id="tiles" class="tiles" aria-live="polite"></div>
       <div class="subscription-actions" aria-label="Abo Optionen">
-        <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo abschliessen</a>
+        <button id="open-paywall" class="billing-button" type="button">Abo abschliessen</button>
         <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo verwalten</a>
       </div>
+    </div>
+  </section>
+
+  <section id="paywall-screen" class="screen paywall-screen" aria-labelledby="paywall-title">
+    <div class="paywall-shell">
+      <header class="paywall-header">
+        <div>
+          <h1 id="paywall-title" class="title">clar·Apps abonnieren</h1>
+          <p class="copy">Wähle dein Abo und starte sicher mit Stripe.</p>
+        </div>
+        <button id="close-paywall" class="paywall-close" type="button" aria-label="Schliessen">x</button>
+      </header>
+
+      <div class="billing-toggle" aria-label="Abrechnung">
+        <button type="button" data-billing-option="monthly" aria-pressed="false">Monatlich</button>
+        <button type="button" data-billing-option="yearly" aria-pressed="true">Jährlich <span class="recommended-badge">empfohlen</span></button>
+      </div>
+
+      <div class="plan-grid" role="radiogroup" aria-label="Abo auswählen">
+        <button class="plan-card" type="button" data-plan-option="one" role="radio" aria-checked="false">
+          <span class="plan-copy">
+            <span class="plan-name">1 App</span>
+            <span class="plan-note">Für eine clar App deiner Wahl.</span>
+          </span>
+          <span class="plan-price" data-plan-price="one">CHF 29/Jahr</span>
+        </button>
+        <button class="plan-card selected" type="button" data-plan-option="two" role="radio" aria-checked="true">
+          <span class="plan-copy">
+            <span class="plan-name">2 Apps <span class="plan-badge">beliebt</span></span>
+            <span class="plan-note">Kombiniere zwei aktive clar Apps.</span>
+          </span>
+          <span class="plan-price" data-plan-price="two">CHF 49/Jahr</span>
+        </button>
+        <button class="plan-card" type="button" data-plan-option="all" role="radio" aria-checked="false">
+          <span class="plan-copy">
+            <span class="plan-name">Alle Apps</span>
+            <span class="plan-note">Alles freischalten, auch kommende Apps.</span>
+          </span>
+          <span class="plan-price" data-plan-price="all">CHF 69/Jahr</span>
+        </button>
+      </div>
+
+      <section id="app-selection" class="app-selection" aria-labelledby="app-selection-title">
+        <div>
+          <h2 id="app-selection-title" class="title">App-Auswahl</h2>
+          <p id="app-selection-help" class="copy">Wähle genau 2 Apps.</p>
+        </div>
+        <div class="app-options">
+          <label class="app-choice" data-app-choice="markt">
+            <input type="checkbox" value="markt" data-app-checkbox>
+            <span class="app-choice-text">
+              <span class="app-choice-title">clar·markt</span>
+              <span class="app-choice-desc">Einkaufsplanung</span>
+            </span>
+          </label>
+          <label class="app-choice" data-app-choice="heim">
+            <input type="checkbox" value="heim" data-app-checkbox>
+            <span class="app-choice-text">
+              <span class="app-choice-title">clar·heim</span>
+              <span class="app-choice-desc">Haushaltsorganisation</span>
+            </span>
+          </label>
+          <label class="app-choice disabled" data-app-choice="log">
+            <input type="checkbox" value="log" data-app-checkbox disabled>
+            <span class="app-choice-text">
+              <span class="app-choice-title">clar·log</span>
+              <span class="app-choice-desc">Stimulanzien-Tagebuch</span>
+            </span>
+            <span class="soon-badge">bald</span>
+          </label>
+          <label class="app-choice disabled" data-app-choice="tag">
+            <input type="checkbox" value="tag" data-app-checkbox disabled>
+            <span class="app-choice-text">
+              <span class="app-choice-title">clar·tag</span>
+              <span class="app-choice-desc">Tagesstruktur & Routinen</span>
+            </span>
+            <span class="soon-badge">bald</span>
+          </label>
+        </div>
+      </section>
+
+      <button id="checkout-submit" class="paywall-submit" type="button" disabled>Abonnieren</button>
+      <p id="paywall-status" class="status paywall-status" role="status"></p>
     </div>
   </section>
 </main>
@@ -180,6 +289,8 @@ const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
 const SESSION_STORAGE_KEY = 'clar.supabase.session';
 const SPLASH_MS = 1500;
+const CHECKOUT_SUCCESS_URL = 'https://home.lautini.ch';
+const CHECKOUT_CANCEL_URL = 'https://home.lautini.ch';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -233,11 +344,53 @@ apps.forEach((app) => {
   app.normalizedAliases = app.aliases.map(normalizeAppToken);
 });
 
+const checkoutPrices = {
+  one: {
+    monthly: {
+      markt: 'price_1TWZJGQeJhPuH3BxgpJ7prEp',
+      heim: 'price_1TYO4XQeJhPuH3BxRUWtRr8V'
+    },
+    yearly: {
+      markt: 'price_1TWZHUQeJhPuH3BxeDNHGXqo',
+      heim: 'price_1TYO5XQeJhPuH3BxSRG25Bp2'
+    }
+  },
+  two: {
+    monthly: 'price_1TicQcQeJhPuH3BxOpvuEo2Q',
+    yearly: 'price_1TicRMQeJhPuH3BxoTXp2ttv'
+  },
+  all: {
+    monthly: 'price_1TicSJQeJhPuH3Bx62r3tHvv',
+    yearly: 'price_1TicURQeJhPuH3BxWD8P4pQy'
+  }
+};
+
+const planPrices = {
+  monthly: {
+    one: 'CHF 3.90/Mt',
+    two: 'CHF 6.90/Mt',
+    all: 'CHF 9.90/Mt'
+  },
+  yearly: {
+    one: 'CHF 29/Jahr',
+    two: 'CHF 49/Jahr',
+    all: 'CHF 69/Jahr'
+  }
+};
+
+const appOptions = [
+  { key: 'markt', available: true },
+  { key: 'heim', available: true },
+  { key: 'log', available: false },
+  { key: 'tag', available: false }
+];
+
 const screens = {
   splash: document.querySelector('#splash-screen'),
   login: document.querySelector('#login-screen'),
   entitlement: document.querySelector('#entitlement-screen'),
-  tiles: document.querySelector('#tiles-screen')
+  tiles: document.querySelector('#tiles-screen'),
+  paywall: document.querySelector('#paywall-screen')
 };
 
 const state = {
@@ -245,7 +398,13 @@ const state = {
   subscriberApps: new Set(),
   groupApps: new Set(),
   entitlementLoadError: false,
-  activeGroupIds: []
+  activeGroupIds: [],
+  paywall: {
+    billing: 'yearly',
+    plan: 'two',
+    selectedApps: new Set(),
+    checkoutBusy: false
+  }
 };
 
 const byId = (id) => document.getElementById(id);
@@ -271,6 +430,187 @@ function setBusy(button, busy, busyText) {
   } else {
     button.textContent = button.dataset.label || button.textContent;
     button.disabled = false;
+  }
+}
+
+function openPaywall() {
+  setStatus('paywall-status');
+  renderPaywall();
+  showScreen('paywall');
+  byId('close-paywall').focus();
+}
+
+function closePaywall() {
+  setStatus('paywall-status');
+  state.paywall.checkoutBusy = false;
+  showScreen('tiles');
+}
+
+function renderPaywall() {
+  document.querySelectorAll('[data-billing-option]').forEach((button) => {
+    const isActive = button.dataset.billingOption === state.paywall.billing;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', String(isActive));
+  });
+
+  document.querySelectorAll('[data-plan-option]').forEach((button) => {
+    const plan = button.dataset.planOption;
+    const isSelected = plan === state.paywall.plan;
+    button.classList.toggle('selected', isSelected);
+    button.setAttribute('aria-checked', String(isSelected));
+  });
+
+  Object.entries(planPrices[state.paywall.billing]).forEach(([plan, price]) => {
+    const priceElement = document.querySelector(`[data-plan-price="${plan}"]`);
+    if (priceElement) priceElement.textContent = price;
+  });
+
+  renderAppSelection();
+  updateCheckoutButton();
+}
+
+function renderAppSelection() {
+  const requiredApps = getRequiredAppCount();
+  const appSelection = byId('app-selection');
+  appSelection.classList.toggle('hidden', requiredApps === 0);
+
+  if (requiredApps === 0) return;
+
+  byId('app-selection-help').textContent = requiredApps === 1
+    ? 'Wähle genau 1 App.'
+    : 'Wähle genau 2 Apps.';
+
+  const selectedCount = state.paywall.selectedApps.size;
+  const selectionFull = selectedCount >= requiredApps;
+
+  appOptions.forEach((option) => {
+    const checkbox = document.querySelector(`[data-app-checkbox][value="${option.key}"]`);
+    const choice = document.querySelector(`[data-app-choice="${option.key}"]`);
+    const isSelected = state.paywall.selectedApps.has(option.key);
+    const isDisabled = !option.available || (selectionFull && !isSelected);
+
+    checkbox.checked = isSelected;
+    checkbox.disabled = isDisabled;
+    choice.classList.toggle('disabled', isDisabled);
+  });
+}
+
+function updateCheckoutButton() {
+  const button = byId('checkout-submit');
+  button.disabled = state.paywall.checkoutBusy || !isPaywallSelectionComplete();
+  button.textContent = state.paywall.checkoutBusy ? 'Weiter zu Stripe...' : 'Abonnieren';
+}
+
+function setBillingInterval(billing) {
+  state.paywall.billing = billing;
+  renderPaywall();
+}
+
+function selectPlan(plan) {
+  state.paywall.plan = plan;
+  limitSelectedApps();
+  setStatus('paywall-status');
+  renderPaywall();
+}
+
+function toggleCheckoutApp(appKey, checked) {
+  const requiredApps = getRequiredAppCount();
+
+  if (checked) {
+    if (state.paywall.selectedApps.size >= requiredApps) return;
+    state.paywall.selectedApps.add(appKey);
+  } else {
+    state.paywall.selectedApps.delete(appKey);
+  }
+
+  setStatus('paywall-status');
+  renderPaywall();
+}
+
+function limitSelectedApps() {
+  const requiredApps = getRequiredAppCount();
+
+  if (requiredApps === 0) {
+    state.paywall.selectedApps.clear();
+    return;
+  }
+
+  while (state.paywall.selectedApps.size > requiredApps) {
+    const lastSelected = [...state.paywall.selectedApps].at(-1);
+    state.paywall.selectedApps.delete(lastSelected);
+  }
+}
+
+function getRequiredAppCount() {
+  if (state.paywall.plan === 'one') return 1;
+  if (state.paywall.plan === 'two') return 2;
+  return 0;
+}
+
+function isPaywallSelectionComplete() {
+  const requiredApps = getRequiredAppCount();
+  return requiredApps === 0 || state.paywall.selectedApps.size === requiredApps;
+}
+
+function getSelectedCheckoutApps() {
+  if (state.paywall.plan === 'all') return ['all'];
+  return [...state.paywall.selectedApps];
+}
+
+function getCheckoutPriceId() {
+  const { billing, plan } = state.paywall;
+
+  if (plan === 'one') {
+    const [selectedApp] = state.paywall.selectedApps;
+    return checkoutPrices.one[billing][selectedApp] || '';
+  }
+
+  return checkoutPrices[plan][billing] || '';
+}
+
+async function startCheckout() {
+  if (!state.session?.user?.id) {
+    setStatus('paywall-status', 'Bitte melde dich zuerst an.', true);
+    showScreen('login');
+    return;
+  }
+
+  if (!isPaywallSelectionComplete()) {
+    setStatus('paywall-status', 'Bitte vervollständige deine Auswahl.', true);
+    return;
+  }
+
+  const priceId = getCheckoutPriceId();
+  if (!priceId) {
+    setStatus('paywall-status', 'Für diese Auswahl ist kein Preis hinterlegt.', true);
+    return;
+  }
+
+  state.paywall.checkoutBusy = true;
+  setStatus('paywall-status');
+  renderPaywall();
+
+  try {
+    const { data, error } = await supabase.functions.invoke('create-checkout', {
+      body: {
+        price_id: priceId,
+        selected_apps: getSelectedCheckoutApps(),
+        user_id: state.session.user.id,
+        success_url: CHECKOUT_SUCCESS_URL,
+        cancel_url: CHECKOUT_CANCEL_URL
+      }
+    });
+
+    if (error) throw error;
+
+    const checkoutUrl = data?.url || data?.checkout_url || data?.session_url;
+    if (!checkoutUrl) throw new Error('Keine Checkout-URL erhalten.');
+
+    window.location.assign(checkoutUrl);
+  } catch (error) {
+    state.paywall.checkoutBusy = false;
+    setStatus('paywall-status', error.message || 'Checkout konnte nicht gestartet werden.', true);
+    renderPaywall();
   }
 }
 
@@ -612,6 +952,23 @@ function wireEvents() {
   byId('reviewer-modal').addEventListener('click', (event) => {
     if (event.target.id === 'reviewer-modal') closeReviewerModal();
   });
+
+  byId('open-paywall').addEventListener('click', openPaywall);
+  byId('close-paywall').addEventListener('click', closePaywall);
+
+  document.querySelectorAll('[data-billing-option]').forEach((button) => {
+    button.addEventListener('click', () => setBillingInterval(button.dataset.billingOption));
+  });
+
+  document.querySelectorAll('[data-plan-option]').forEach((button) => {
+    button.addEventListener('click', () => selectPlan(button.dataset.planOption));
+  });
+
+  document.querySelectorAll('[data-app-checkbox]').forEach((checkbox) => {
+    checkbox.addEventListener('change', () => toggleCheckoutApp(checkbox.value, checkbox.checked));
+  });
+
+  byId('checkout-submit').addEventListener('click', startCheckout);
 
   byId('login-form').addEventListener('submit', async (event) => {
     event.preventDefault();
