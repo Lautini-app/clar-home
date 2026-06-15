@@ -9,52 +9,694 @@
 :root{
   --paper:#F5F3EE;
   --green:#2E5C3E;
+  --text:#1C2E1C;
+  --muted:#667566;
+  --line:#DAD6CC;
+  --soft:#EBE6DC;
+  --danger:#8B3A2B;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--paper);color:var(--green);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;}
-body{display:grid;place-items:center;min-height:100vh;padding:2rem;}
-.home{display:flex;width:100%;max-width:22rem;flex-direction:column;align-items:center;gap:1.5rem;}
-.logo{font-size:4rem;font-weight:800;letter-spacing:-0.07em;line-height:0.9;}
-.apple-button{width:100%;min-height:3.25rem;border:0;border-radius:0.75rem;background:#000;color:#fff;font:inherit;font-size:1rem;font-weight:600;cursor:pointer;}
-.apple-button:disabled{cursor:not-allowed;opacity:0.5;}
-.apple-button:active{transform:scale(0.98);}
+html,body{height:100%;background:var(--paper);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;}
+body{min-height:100vh;}
+button,input{font:inherit;color:inherit;}
+button{cursor:pointer;}
+button:disabled{cursor:not-allowed;opacity:.58;}
+.app{min-height:100vh;padding:2rem 1.25rem calc(2rem + env(safe-area-inset-bottom));}
+.screen{display:none;width:100%;min-height:calc(100vh - 4rem);align-items:center;justify-content:center;}
+.screen.active{display:flex;}
+.stack{display:flex;width:100%;max-width:24rem;flex-direction:column;align-items:stretch;gap:1rem;}
+.center{align-items:center;text-align:center;}
+.splash{background:var(--green);color:var(--paper);position:fixed;inset:0;z-index:10;}
+.splash .logo{color:var(--paper);}
+.logo{appearance:none;border:0;background:transparent;color:var(--green);font-size:4rem;font-weight:800;letter-spacing:-0.07em;line-height:0.9;text-align:center;}
+.logo.small{font-size:2.75rem;align-self:center;margin-bottom:.25rem;}
+.title{font-size:1.45rem;line-height:1.15;font-weight:750;letter-spacing:-.03em;color:var(--text);}
+.copy{color:var(--muted);font-size:.98rem;line-height:1.45;}
+.card{width:100%;border:1px solid var(--line);border-radius:1.35rem;background:rgba(245,243,238,.82);box-shadow:0 1rem 2.5rem rgba(46,92,62,.12);padding:1.2rem;}
+.form{display:flex;flex-direction:column;gap:.85rem;width:100%;}
+.field{display:flex;flex-direction:column;gap:.4rem;text-align:left;}
+.label{font-size:.86rem;font-weight:650;color:var(--text);}
+.input-row{position:relative;}
+.input{width:100%;min-height:3.25rem;border:1px solid var(--line);border-radius:.9rem;background:rgba(255,255,255,.46);padding:0 1rem;outline:none;}
+.input:focus{border-color:var(--green);box-shadow:0 0 0 .2rem rgba(46,92,62,.14);}
+.password-input{padding-right:3.25rem;}
+.eye-button{position:absolute;right:.35rem;top:50%;display:grid;width:2.5rem;height:2.5rem;place-items:center;transform:translateY(-50%);border:0;border-radius:.75rem;background:transparent;color:var(--green);}
+.eye-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
+.primary,.secondary,.text-button,.unlock-button{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
+.primary{border:0;background:var(--green);color:var(--paper);}
+.secondary{border:1px solid var(--green);background:transparent;color:var(--green);}
+.text-button{min-height:auto;border:0;background:transparent;color:var(--green);font-weight:700;text-decoration:underline;text-underline-offset:.18rem;}
+.status{min-height:1.25rem;color:var(--muted);font-size:.9rem;line-height:1.35;text-align:center;}
+.status.error{color:var(--danger);}
+.tiles{display:grid;width:100%;max-width:34rem;grid-template-columns:1fr;gap:.85rem;}
+.tile{display:flex;min-height:6.5rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:1.35rem;background:rgba(245,243,238,.86);padding:1.1rem;text-decoration:none;color:var(--text);box-shadow:0 .8rem 2rem rgba(46,92,62,.09);}
+.tile:not(.locked):active{transform:scale(.99);}
+.tile-name{font-size:1.35rem;font-weight:800;letter-spacing:-.04em;color:var(--green);}
+.tile-desc{margin-top:.2rem;color:var(--muted);font-size:.9rem;}
+.tile-action{display:flex;align-items:center;gap:.55rem;color:var(--green);font-weight:750;white-space:nowrap;}
+.lock{display:grid;width:1.25rem;height:1.25rem;place-items:center;color:var(--green);}
+.lock svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
+.unlock-button{border:1px solid var(--green);background:transparent;color:var(--green);padding:0 .9rem;min-height:2.55rem;}
+.soon{opacity:.72;}
+.topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.topbar .logo{font-size:2rem;}
+.signout{border:0;background:transparent;color:var(--green);font-size:.92rem;font-weight:700;}
+.modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
+.modal-backdrop.active{display:flex;}
+.modal{width:100%;max-width:23rem;border-radius:1.35rem;background:var(--paper);padding:1.2rem;box-shadow:0 1.5rem 4rem rgba(28,46,28,.24);}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
+.close{border:0;background:transparent;color:var(--green);font-size:1.4rem;line-height:1;}
+.hidden{display:none!important;}
+@media (min-width:42rem){
+  .tiles{grid-template-columns:1fr 1fr;}
+}
 </style>
 </head>
 <body>
-<main class="home">
-  <div class="logo" aria-label="clar">clar·</div>
-  <button class="apple-button" type="button" id="apple-sign-in" disabled>Mit Apple anmelden</button>
+<main class="app">
+  <section id="splash-screen" class="screen splash active" aria-live="polite">
+    <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
+  </section>
+
+  <section id="login-screen" class="screen" aria-labelledby="login-title">
+    <div class="stack center">
+      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
+      <div class="card">
+        <div class="stack">
+          <div>
+            <h1 id="login-title" class="title">Willkommen zu clar</h1>
+            <p id="login-copy" class="copy">Melde dich an, um deine clar Apps zu oeffnen.</p>
+          </div>
+
+          <form id="login-form" class="form">
+            <label class="field">
+              <span class="label">Email</span>
+              <input id="login-email" class="input" type="email" autocomplete="email" required>
+            </label>
+            <label class="field">
+              <span class="label">Passwort</span>
+              <span class="input-row">
+                <input id="login-password" class="input password-input" type="password" autocomplete="current-password" required>
+                <button class="eye-button" type="button" data-toggle-password="login-password" aria-label="Passwort anzeigen">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button id="login-submit" class="primary" type="submit">Anmelden</button>
+          </form>
+
+          <button id="despia-apple" class="secondary hidden" type="button" disabled>Mit Apple anmelden</button>
+          <button id="show-register" class="text-button" type="button">Konto erstellen</button>
+          <p id="login-status" class="status" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="register-screen" class="screen" aria-labelledby="register-title">
+    <div class="stack center">
+      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
+      <div class="card">
+        <div class="stack">
+          <div>
+            <h1 id="register-title" class="title">Konto erstellen</h1>
+            <p class="copy">Registrierung ist nur im Web verfuegbar.</p>
+          </div>
+
+          <form id="register-form" class="form">
+            <label class="field">
+              <span class="label">Email</span>
+              <input id="register-email" class="input" type="email" autocomplete="email" required>
+            </label>
+            <label class="field">
+              <span class="label">Passwort</span>
+              <span class="input-row">
+                <input id="register-password" class="input password-input" type="password" autocomplete="new-password" required minlength="6">
+                <button class="eye-button" type="button" data-toggle-password="register-password" aria-label="Passwort anzeigen">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <label class="field">
+              <span class="label">Passwort wiederholen</span>
+              <span class="input-row">
+                <input id="register-password-repeat" class="input password-input" type="password" autocomplete="new-password" required minlength="6">
+                <button class="eye-button" type="button" data-toggle-password="register-password-repeat" aria-label="Passwort anzeigen">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button id="register-submit" class="primary" type="submit">Konto erstellen</button>
+          </form>
+
+          <button id="show-login" class="text-button" type="button">Zur Anmeldung</button>
+          <p id="register-status" class="status" role="status"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="entitlement-screen" class="screen" aria-labelledby="entitlement-title">
+    <div class="stack center">
+      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
+      <div class="card">
+        <div class="stack center">
+          <h1 id="entitlement-title" class="title">Abo wird geprueft</h1>
+          <p id="entitlement-status" class="copy">Wir pruefen deine Freischaltungen.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tiles-screen" class="screen" aria-labelledby="tiles-title">
+    <div class="stack center" style="max-width:34rem">
+      <div class="topbar">
+        <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
+        <button id="signout" class="signout" type="button">Abmelden</button>
+      </div>
+      <div>
+        <h1 id="tiles-title" class="title">Deine clar Apps</h1>
+        <p id="tiles-copy" class="copy">Waehle eine App aus.</p>
+      </div>
+      <div id="tiles" class="tiles" aria-live="polite"></div>
+    </div>
+  </section>
 </main>
-<script>
-(() => {
-  const CLERK_CONFIG_URL = "clerk://configure?key=pk_test_bGl2ZS1tYW1tb3RoLTYxLmNsZXJrLmFjY291bnRzLmRldiQ";
-  const CLERK_APPLE_URL = "clerk://apple";
-  const appleButton = document.getElementById("apple-sign-in");
 
-  let clerkReady = false;
+<div id="reviewer-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="reviewer-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="reviewer-title" class="title">Reviewer-Zugang</h2>
+        <p class="copy">Interner Login fuer Review.</p>
+      </div>
+      <button id="close-reviewer" class="close" type="button" aria-label="Schliessen">x</button>
+    </div>
+    <form id="reviewer-form" class="form">
+      <label class="field">
+        <span class="label">Email</span>
+        <input id="reviewer-email" class="input" type="email" autocomplete="email" required>
+      </label>
+      <label class="field">
+        <span class="label">Passwort</span>
+        <span class="input-row">
+          <input id="reviewer-password" class="input password-input" type="password" autocomplete="current-password" required>
+          <button class="eye-button" type="button" data-toggle-password="reviewer-password" aria-label="Passwort anzeigen">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+            </svg>
+          </button>
+        </span>
+      </label>
+      <button id="reviewer-submit" class="primary" type="submit">Reviewer anmelden</button>
+      <p id="reviewer-status" class="status" role="status"></p>
+    </form>
+  </div>
+</div>
 
-  const getEventType = (event) => {
-    if (typeof event === "string") return event;
-    if (!event || typeof event !== "object") return "";
-    return event.type || event.event || event.name || "";
-  };
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  window.onClerkEvent = (event) => {
-    if (getEventType(event) === "ready") {
-      clerkReady = true;
-      appleButton.disabled = false;
+const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
+const REVIEWER_EMAIL = 'reviewer@clar.app';
+const CLERK_CONFIG_URL = 'clerk://configure?key=pk_test_bGl2ZS1tYW1tb3RoLTYxLmNsZXJrLmFjY291bnRzLmRldiQ';
+const CLERK_APPLE_URL = 'clerk://apple';
+const SPLASH_MS = 1500;
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
+
+const apps = [
+  {
+    key: 'markt',
+    aliases: ['markt', 'clar.markt', 'clar-markt'],
+    name: 'clar·markt',
+    description: 'Markt oeffnen',
+    url: 'https://clar.markt.lautini.ch/app'
+  },
+  {
+    key: 'heim',
+    aliases: ['heim', 'clar.heim', 'clar-heim'],
+    name: 'clar·heim',
+    description: 'Heute ansehen',
+    url: 'https://clar.heim.lautini.ch/heute'
+  },
+  {
+    key: 'log',
+    aliases: ['log', 'clar.log', 'clar-log'],
+    name: 'clar·log',
+    description: 'Log oeffnen',
+    url: 'https://clar.log.lautini.ch'
+  },
+  {
+    key: 'tag',
+    aliases: ['tag', 'clar.tag', 'clar-tag'],
+    name: 'clar·tag',
+    description: 'Bald verfuegbar',
+    soon: true
+  }
+];
+
+const screens = {
+  splash: document.querySelector('#splash-screen'),
+  login: document.querySelector('#login-screen'),
+  register: document.querySelector('#register-screen'),
+  entitlement: document.querySelector('#entitlement-screen'),
+  tiles: document.querySelector('#tiles-screen')
+};
+
+const isDespia = navigator.userAgent.toLowerCase().includes('despia');
+const state = {
+  session: null,
+  entitlements: [],
+  reviewer: false
+};
+
+const byId = (id) => document.getElementById(id);
+
+let clerkReady = false;
+
+function getClerkEventType(event) {
+  if (typeof event === 'string') return event;
+  if (!event || typeof event !== 'object') return '';
+  return event.type || event.event || event.name || '';
+}
+
+window.onClerkEvent = (event) => {
+  if (getClerkEventType(event) !== 'ready') return;
+
+  clerkReady = true;
+  const appleButton = byId('despia-apple');
+  if (appleButton) appleButton.disabled = false;
+};
+
+function showScreen(name) {
+  Object.values(screens).forEach((screen) => screen.classList.remove('active'));
+  screens[name].classList.add('active');
+}
+
+function setStatus(id, message = '', isError = false) {
+  const element = byId(id);
+  element.textContent = message;
+  element.classList.toggle('error', isError);
+}
+
+function setBusy(button, busy, busyText) {
+  if (!button) return;
+  if (busy) {
+    button.dataset.label = button.textContent;
+    button.textContent = busyText;
+    button.disabled = true;
+  } else {
+    button.textContent = button.dataset.label || button.textContent;
+    button.disabled = false;
+  }
+}
+
+async function initialRoute() {
+  configureLoginMode();
+  await restoreSessionFromUrl();
+  const { data } = await supabase.auth.getSession();
+  state.session = data.session;
+  state.reviewer = isReviewerSession(state.session);
+
+  window.setTimeout(() => {
+    if (state.session) {
+      checkEntitlements();
+    } else {
+      showScreen('login');
     }
-  };
+  }, SPLASH_MS);
+}
 
-  appleButton.addEventListener("click", () => {
-    if (!clerkReady || typeof window.despia !== "function") return;
-    window.despia(CLERK_APPLE_URL);
+function configureLoginMode() {
+  const loginForm = byId('login-form');
+  const appleButton = byId('despia-apple');
+  const registerLink = byId('show-register');
+  const copy = byId('login-copy');
+
+  if (isDespia) {
+    loginForm.classList.add('hidden');
+    registerLink.classList.add('hidden');
+    appleButton.classList.remove('hidden');
+    appleButton.disabled = typeof window.despia === 'function' && !clerkReady;
+    copy.textContent = 'Melde dich in Despia mit Apple an.';
+
+    if (typeof window.despia === 'function') {
+      window.despia(CLERK_CONFIG_URL);
+    }
+  }
+}
+
+async function restoreSessionFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  const accessToken = params.get('access_token') || hash.get('access_token');
+  const refreshToken = params.get('refresh_token') || hash.get('refresh_token');
+
+  if (!accessToken || !refreshToken) return;
+
+  const { data, error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken
   });
 
-  if (typeof window.despia === "function") {
-    window.despia(CLERK_CONFIG_URL);
+  if (!error) {
+    state.session = data.session;
+    window.history.replaceState({}, document.title, window.location.pathname);
   }
-})();
+}
+
+function isReviewerSession(session) {
+  return session?.user?.email?.toLowerCase() === REVIEWER_EMAIL;
+}
+
+async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  state.session = data.session;
+  state.reviewer = isReviewerSession(data.session);
+  return data.session;
+}
+
+async function signUp(email, password) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+
+  if (data.session) {
+    state.session = data.session;
+    state.reviewer = isReviewerSession(data.session);
+    return data.session;
+  }
+
+  return signIn(email, password);
+}
+
+async function checkEntitlements() {
+  if (!state.session) {
+    showScreen('login');
+    return;
+  }
+
+  showScreen('entitlement');
+  setStatus('entitlement-status', 'Wir pruefen deine Freischaltungen.');
+
+  if (state.reviewer) {
+    state.entitlements = [{ app: 'all', active: true }];
+    renderTiles();
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from('entitlements')
+    .select('*')
+    .eq('user_id', state.session.user.id);
+
+  if (error) {
+    setStatus('entitlement-status', 'Entitlements konnten nicht geladen werden.', true);
+    window.setTimeout(() => showScreen('login'), 1400);
+    return;
+  }
+
+  state.entitlements = data || [];
+  renderTiles();
+}
+
+function renderTiles() {
+  const tiles = byId('tiles');
+  const copy = byId('tiles-copy');
+  tiles.textContent = '';
+
+  const hasAnyEntitlement = state.reviewer || state.entitlements.some(isActiveEntitlement);
+  copy.textContent = state.reviewer
+    ? 'Reviewer-Zugang aktiv: alle Apps sind freigeschaltet.'
+    : hasAnyEntitlement
+      ? 'Waehle eine App aus.'
+      : 'Kein aktives Abo gefunden. Stripe Checkout folgt.';
+
+  apps.forEach((app) => {
+    tiles.appendChild(createTile(app));
+  });
+
+  showScreen('tiles');
+}
+
+function createTile(app) {
+  const unlocked = !app.soon && hasAppEntitlement(app);
+  const tile = document.createElement(unlocked ? 'a' : 'div');
+  tile.className = `tile${unlocked ? '' : ' locked'}${app.soon ? ' soon' : ''}`;
+
+  if (unlocked) {
+    tile.href = withSessionTokens(app.url);
+  }
+
+  const text = document.createElement('div');
+  const name = document.createElement('div');
+  const desc = document.createElement('div');
+  name.className = 'tile-name';
+  desc.className = 'tile-desc';
+  name.textContent = app.name;
+  desc.textContent = app.description;
+  text.append(name, desc);
+
+  const action = document.createElement('div');
+  action.className = 'tile-action';
+
+  if (app.soon) {
+    action.textContent = 'bald';
+  } else if (unlocked) {
+    action.textContent = 'oeffnen';
+  } else {
+    const lock = createLockIcon();
+
+    const unlock = document.createElement('button');
+    unlock.className = 'unlock-button';
+    unlock.type = 'button';
+    unlock.textContent = 'Freischalten';
+    unlock.addEventListener('click', () => {
+      window.alert('Stripe Checkout folgt.');
+    });
+
+    action.append(lock, unlock);
+  }
+
+  tile.append(text, action);
+  return tile;
+}
+
+function createLockIcon() {
+  const lock = document.createElement('span');
+  lock.className = 'lock';
+  lock.setAttribute('aria-hidden', 'true');
+  lock.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none">
+      <path d="M7 10V8a5 5 0 0 1 10 0v2" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M6.5 10h11A1.5 1.5 0 0 1 19 11.5v7A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5v-7A1.5 1.5 0 0 1 6.5 10Z" stroke-width="1.8" stroke-linejoin="round"/>
+      <path d="M12 14v2" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  `;
+  return lock;
+}
+
+function hasAppEntitlement(app) {
+  if (state.reviewer) return true;
+
+  const activeEntitlements = state.entitlements.filter(isActiveEntitlement);
+  if (!activeEntitlements.length) return false;
+
+  return activeEntitlements.some((entitlement) => {
+    const appValue = findAppValue(entitlement);
+    if (!appValue) return true;
+
+    const normalized = String(appValue).toLowerCase();
+    return normalized === 'all' || app.aliases.some((alias) => normalized.includes(alias));
+  });
+}
+
+function isActiveEntitlement(entitlement) {
+  if (!entitlement) return false;
+
+  const status = String(entitlement.status || entitlement.subscription_status || '').toLowerCase();
+  if (['canceled', 'cancelled', 'expired', 'inactive', 'past_due', 'unpaid'].includes(status)) {
+    return false;
+  }
+
+  if (entitlement.active === false || entitlement.enabled === false) return false;
+
+  const expiresAt = entitlement.expires_at || entitlement.valid_until || entitlement.current_period_end;
+  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) return false;
+
+  return true;
+}
+
+function findAppValue(entitlement) {
+  const fields = ['app', 'app_key', 'product', 'product_key', 'slug', 'name', 'scope', 'plan'];
+  for (const field of fields) {
+    if (entitlement[field]) return entitlement[field];
+  }
+  return '';
+}
+
+function withSessionTokens(url) {
+  const target = new URL(url);
+  target.searchParams.set('access_token', state.session.access_token);
+  target.searchParams.set('refresh_token', state.session.refresh_token);
+  return target.toString();
+}
+
+function openReviewerModal() {
+  byId('reviewer-modal').classList.add('active');
+  byId('reviewer-email').value = REVIEWER_EMAIL;
+  byId('reviewer-password').focus();
+}
+
+function closeReviewerModal() {
+  byId('reviewer-modal').classList.remove('active');
+  setStatus('reviewer-status');
+}
+
+function wireEvents() {
+  let logoTaps = 0;
+  let logoTimer = null;
+
+  document.querySelectorAll('[data-logo-tap]').forEach((logo) => {
+    logo.addEventListener('click', () => {
+      logoTaps += 1;
+      window.clearTimeout(logoTimer);
+      logoTimer = window.setTimeout(() => {
+        logoTaps = 0;
+      }, 1800);
+
+      if (logoTaps >= 5) {
+        logoTaps = 0;
+        openReviewerModal();
+      }
+    });
+  });
+
+  document.querySelectorAll('[data-toggle-password]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = byId(button.dataset.togglePassword);
+      const visible = input.type === 'text';
+      input.type = visible ? 'password' : 'text';
+      button.setAttribute('aria-label', visible ? 'Passwort anzeigen' : 'Passwort verbergen');
+    });
+  });
+
+  byId('show-register').addEventListener('click', () => showScreen('register'));
+  byId('show-login').addEventListener('click', () => showScreen('login'));
+  byId('close-reviewer').addEventListener('click', closeReviewerModal);
+  byId('reviewer-modal').addEventListener('click', (event) => {
+    if (event.target.id === 'reviewer-modal') closeReviewerModal();
+  });
+
+  byId('despia-apple').addEventListener('click', () => {
+    if (typeof window.despia === 'function') {
+      if (!clerkReady) return;
+      window.despia(CLERK_APPLE_URL);
+      return;
+    }
+
+    window.location.href = CLERK_APPLE_URL;
+  });
+
+  byId('login-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = byId('login-submit');
+    setBusy(button, true, 'Anmelden...');
+    setStatus('login-status');
+
+    try {
+      await signIn(byId('login-email').value.trim(), byId('login-password').value);
+      await checkEntitlements();
+    } catch (error) {
+      setStatus('login-status', error.message || 'Anmeldung fehlgeschlagen.', true);
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
+  byId('register-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const password = byId('register-password').value;
+    const passwordRepeat = byId('register-password-repeat').value;
+
+    if (password !== passwordRepeat) {
+      setStatus('register-status', 'Die Passwoerter stimmen nicht ueberein.', true);
+      return;
+    }
+
+    const button = byId('register-submit');
+    setBusy(button, true, 'Erstellen...');
+    setStatus('register-status');
+
+    try {
+      await signUp(byId('register-email').value.trim(), password);
+      await checkEntitlements();
+    } catch (error) {
+      setStatus('register-status', error.message || 'Registrierung fehlgeschlagen.', true);
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
+  byId('reviewer-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const email = byId('reviewer-email').value.trim().toLowerCase();
+    if (email !== REVIEWER_EMAIL) {
+      setStatus('reviewer-status', 'Nur reviewer@clar.app ist fuer diesen Zugang freigeschaltet.', true);
+      return;
+    }
+
+    const button = byId('reviewer-submit');
+    setBusy(button, true, 'Anmelden...');
+    setStatus('reviewer-status');
+
+    try {
+      await signIn(email, byId('reviewer-password').value);
+      state.reviewer = true;
+      closeReviewerModal();
+      await checkEntitlements();
+    } catch (error) {
+      setStatus('reviewer-status', error.message || 'Reviewer-Anmeldung fehlgeschlagen.', true);
+    } finally {
+      setBusy(button, false);
+    }
+  });
+
+  byId('signout').addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    state.session = null;
+    state.entitlements = [];
+    state.reviewer = false;
+    showScreen('login');
+  });
+
+  supabase.auth.onAuthStateChange((_event, session) => {
+    state.session = session;
+    state.reviewer = isReviewerSession(session);
+  });
+}
+
+wireEvents();
+initialRoute();
 </script>
 </body>
 </html>
