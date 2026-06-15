@@ -668,8 +668,8 @@ async function initialRoute() {
   await delay(SPLASH_MS);
   await loadAccess();
   renderTiles();
-  updateLoginButton();
   showScreen('tiles');
+  if (typeof updateLoginButton === 'function') updateLoginButton();
 }
 
 async function routeAfterLogin() {
