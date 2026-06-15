@@ -37,20 +37,18 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .field{display:flex;flex-direction:column;gap:.4rem;text-align:left;}
 .label{font-size:.86rem;font-weight:650;color:var(--text);}
 .input-row{position:relative;}
-.input{width:100%;min-height:3.25rem;border:1px solid var(--line);border-radius:.9rem;background:rgba(255,255,255,.46);padding:0 1rem;outline:none;}
+.input{width:100%;min-height:3.25rem;border:1px solid var(--line);border-radius:.9rem;background:rgba(255,255,255,.72);padding:0 1rem;outline:none;}
 .input:focus{border-color:var(--green);box-shadow:0 0 0 .2rem rgba(46,92,62,.14);}
 .password-input{padding-right:3.25rem;}
 .eye-button{position:absolute;right:.35rem;top:50%;display:grid;width:2.5rem;height:2.5rem;place-items:center;transform:translateY(-50%);border:0;border-radius:.75rem;background:transparent;color:var(--green);}
 .eye-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
-.primary,.secondary,.text-button,.unlock-button{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
+.primary,.billing-button{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
 .primary{border:0;background:var(--green);color:var(--paper);}
-.secondary{border:1px solid var(--green);background:transparent;color:var(--green);}
-.text-button{min-height:auto;border:0;background:transparent;color:var(--green);font-weight:700;text-decoration:underline;text-underline-offset:.18rem;}
 .status{min-height:1.25rem;color:var(--muted);font-size:.9rem;line-height:1.35;text-align:center;}
 .status.error{color:var(--danger);}
 .tiles{display:flex;width:100%;max-width:34rem;flex-direction:column;gap:.85rem;}
 .tile-section{width:100%;margin:.35rem 0 -.2rem;color:var(--muted);font-size:.73rem;font-weight:800;letter-spacing:.08em;text-align:left;text-transform:uppercase;}
-.tile{display:flex;min-height:5.85rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:1.05rem;background:rgba(255,255,255,.62);padding:1rem;text-decoration:none;color:var(--text);box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
+.tile{display:flex;min-height:5.85rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-decoration:none;color:var(--text);box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
 .tile:not(.locked):active{transform:scale(.99);}
 .tile-icon{display:grid;flex:0 0 auto;width:3rem;height:3rem;place-items:center;border-radius:.9rem;font-size:1.3rem;}
 .tile-body{display:flex;min-width:0;flex:1;align-items:center;gap:.85rem;text-align:left;}
@@ -58,15 +56,17 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .tile-name{font-size:1.35rem;font-weight:800;letter-spacing:-.04em;color:var(--green);}
 .tile-desc{margin-top:.2rem;color:var(--muted);font-size:.9rem;}
 .tile-action{display:flex;align-items:center;gap:.55rem;color:var(--green);font-size:1.65rem;font-weight:650;line-height:1;white-space:nowrap;}
-.lock{display:grid;width:1.25rem;height:1.25rem;place-items:center;color:var(--green);}
-.lock svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
-.unlock-button{border:1px solid var(--green);background:transparent;color:var(--green);padding:0 .9rem;min-height:2.55rem;}
-.soon{opacity:.58;}
+.lock{font-size:1.15rem;}
+.soon{opacity:.62;}
 .soon-badge{display:inline-flex;align-items:center;border-radius:999px;background:var(--soft);padding:.15rem .45rem;color:var(--muted);font-size:.66rem;font-weight:800;letter-spacing:.02em;}
+.subscription-actions{display:none;width:100%;max-width:34rem;grid-template-columns:1fr;gap:.75rem;margin-top:.25rem;}
+.subscription-actions.active{display:grid;}
+.billing-button{display:flex;align-items:center;justify-content:center;border:1px solid var(--green);background:transparent;color:var(--green);text-decoration:none;}
+.billing-button.primary-link{border:0;background:var(--green);color:var(--paper);}
 .topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:space-between;margin-bottom:1rem;}
 .topbar .logo{font-size:2rem;}
 .topbar-spacer,.settings-button{width:2.6rem;height:2.6rem;}
-.settings-button{display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.52);color:var(--green);box-shadow:0 .4rem 1rem rgba(46,92,62,.08);}
+.settings-button{display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.72);color:var(--green);box-shadow:0 .4rem 1rem rgba(46,92,62,.08);}
 .settings-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
 .modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
 .modal-backdrop.active{display:flex;}
@@ -89,7 +89,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <div class="stack">
           <div>
             <h1 id="login-title" class="title">Willkommen zu clar</h1>
-            <p id="login-copy" class="copy">Melde dich an, um deine clar Apps zu oeffnen.</p>
+            <p id="login-copy" class="copy">Melde dich mit Email und Passwort an, um deine clar Apps zu öffnen.</p>
           </div>
 
           <form id="login-form" class="form">
@@ -112,58 +112,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
             <button id="login-submit" class="primary" type="submit">Anmelden</button>
           </form>
 
-          <button id="despia-apple" class="secondary hidden" type="button" disabled>Mit Apple anmelden</button>
-          <button id="show-register" class="text-button" type="button">Konto erstellen</button>
           <p id="login-status" class="status" role="status"></p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section id="register-screen" class="screen" aria-labelledby="register-title">
-    <div class="stack center">
-      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
-      <div class="card">
-        <div class="stack">
-          <div>
-            <h1 id="register-title" class="title">Konto erstellen</h1>
-            <p class="copy">Registrierung ist nur im Web verfuegbar.</p>
-          </div>
-
-          <form id="register-form" class="form">
-            <label class="field">
-              <span class="label">Email</span>
-              <input id="register-email" class="input" type="email" autocomplete="email" required>
-            </label>
-            <label class="field">
-              <span class="label">Passwort</span>
-              <span class="input-row">
-                <input id="register-password" class="input password-input" type="password" autocomplete="new-password" required minlength="6">
-                <button class="eye-button" type="button" data-toggle-password="register-password" aria-label="Passwort anzeigen">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
-                  </svg>
-                </button>
-              </span>
-            </label>
-            <label class="field">
-              <span class="label">Passwort wiederholen</span>
-              <span class="input-row">
-                <input id="register-password-repeat" class="input password-input" type="password" autocomplete="new-password" required minlength="6">
-                <button class="eye-button" type="button" data-toggle-password="register-password-repeat" aria-label="Passwort anzeigen">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
-                  </svg>
-                </button>
-              </span>
-            </label>
-            <button id="register-submit" class="primary" type="submit">Konto erstellen</button>
-          </form>
-
-          <button id="show-login" class="text-button" type="button">Zur Anmeldung</button>
-          <p id="register-status" class="status" role="status"></p>
         </div>
       </div>
     </div>
@@ -174,8 +123,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
       <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
       <div class="card">
         <div class="stack center">
-          <h1 id="entitlement-title" class="title">Abo wird geprueft</h1>
-          <p id="entitlement-status" class="copy">Wir pruefen deine Freischaltungen.</p>
+          <h1 id="entitlement-title" class="title">Abo wird geprüft</h1>
+          <p id="entitlement-status" class="copy">Wir prüfen deine Freischaltungen.</p>
         </div>
       </div>
     </div>
@@ -198,6 +147,10 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <p id="tiles-copy" class="copy">Wähle eine App aus.</p>
       </div>
       <div id="tiles" class="tiles" aria-live="polite"></div>
+      <div id="subscription-actions" class="subscription-actions" aria-label="Abo Optionen">
+        <a class="billing-button primary-link" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo abschliessen</a>
+        <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo verwalten</a>
+      </div>
     </div>
   </section>
 </main>
@@ -207,7 +160,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
     <div class="modal-head">
       <div>
         <h2 id="reviewer-title" class="title">Reviewer-Zugang</h2>
-        <p class="copy">Interner Login fuer Review.</p>
+        <p class="copy">Login mit Email und Passwort.</p>
       </div>
       <button id="close-reviewer" class="close" type="button" aria-label="Schliessen">x</button>
     </div>
@@ -228,7 +181,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
           </button>
         </span>
       </label>
-      <button id="reviewer-submit" class="primary" type="submit">Reviewer anmelden</button>
+      <button id="reviewer-submit" class="primary" type="submit">Anmelden</button>
       <p id="reviewer-status" class="status" role="status"></p>
     </form>
   </div>
@@ -239,25 +192,22 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
-const REVIEWER_EMAIL = 'reviewer@clar.app';
-const CLERK_CONFIG_URL = 'clerk://configure?key=pk_test_bGl2ZS1tYW1tb3RoLTYxLmNsZXJrLmFjY291bnRzLmRldiQ';
-const CLERK_APPLE_URL = 'clerk://apple';
 const STRIPE_BILLING_URL = 'https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00';
-const REVENUECAT_OFFERING = 'default';
+const SESSION_STORAGE_KEY = 'clar.supabase.session';
 const SPLASH_MS = 1500;
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: false
   }
 });
 
 const apps = [
   {
-    key: 'markt',
-    aliases: ['markt', 'clar.markt', 'clar-markt'],
+    key: 'clarmarkt',
+    aliases: ['clarmarkt', 'clar·markt', 'clar.markt', 'clar-markt', 'markt'],
     name: 'clar·markt',
     description: 'Einkaufsplanung',
     icon: '🛒',
@@ -265,8 +215,8 @@ const apps = [
     url: 'https://clar.markt.lautini.ch/app'
   },
   {
-    key: 'heim',
-    aliases: ['heim', 'clar.heim', 'clar-heim'],
+    key: 'clarheim',
+    aliases: ['clarheim', 'clar·heim', 'clar.heim', 'clar-heim', 'heim'],
     name: 'clar·heim',
     description: 'Haushaltsorganisation',
     icon: '🏠',
@@ -274,8 +224,8 @@ const apps = [
     url: 'https://clar.heim.lautini.ch/heute'
   },
   {
-    key: 'log',
-    aliases: ['log', 'clar.log', 'clar-log'],
+    key: 'clarlog',
+    aliases: ['clarlog', 'clar·log', 'clar.log', 'clar-log', 'log'],
     name: 'clar·log',
     description: 'Stimulanzien-Tagebuch beta',
     icon: '📖',
@@ -283,55 +233,38 @@ const apps = [
     url: 'https://clar.log.lautini.ch'
   },
   {
-    key: 'tag',
-    aliases: ['tag', 'clar.tag', 'clar-tag'],
+    key: 'clartag',
+    aliases: ['clartag', 'clar·tag', 'clar.tag', 'clar-tag', 'tag'],
     name: 'clar·tag',
     description: 'Tagesstruktur & Routinen',
     icon: '🕐',
     color: '#7A5BAE',
+    url: 'https://clar.tag.lautini.ch',
     soon: true
   }
 ];
 
+apps.forEach((app) => {
+  app.normalizedAliases = app.aliases.map(normalizeAppToken);
+});
+
 const screens = {
   splash: document.querySelector('#splash-screen'),
   login: document.querySelector('#login-screen'),
-  register: document.querySelector('#register-screen'),
   entitlement: document.querySelector('#entitlement-screen'),
   tiles: document.querySelector('#tiles-screen')
 };
 
-const isDespia = navigator.userAgent.toLowerCase().includes('despia');
 const state = {
   session: null,
-  entitlements: [],
+  subscriberApps: new Set(),
+  groupApps: new Set(),
   entitlementLoadError: false,
-  reviewer: false
+  activeGroupIds: []
 };
 
 const byId = (id) => document.getElementById(id);
-
-let clerkReady = false;
-
-function getClerkEventType(event) {
-  if (typeof event === 'string') return event;
-  if (!event || typeof event !== 'object') return '';
-  return event.type || event.event || event.name || '';
-}
-
-window.onClerkEvent = (event) => {
-  if (getClerkEventType(event) !== 'ready') return;
-
-  clerkReady = true;
-  const appleButton = byId('despia-apple');
-  if (appleButton) appleButton.disabled = false;
-};
-
-window.onRevenueCatPurchase = () => {
-  if (isDespia && state.session) checkEntitlements();
-};
-
-window.onRevenueCatRestore = window.onRevenueCatPurchase;
+const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function showScreen(name) {
   Object.values(screens).forEach((screen) => screen.classList.remove('active'));
@@ -357,165 +290,219 @@ function setBusy(button, busy, busyText) {
 }
 
 async function initialRoute() {
-  configureLoginMode();
-  await restoreSessionFromUrl();
-  const { data } = await supabase.auth.getSession();
-  state.session = data.session;
-  state.reviewer = isReviewerSession(state.session);
+  const sessionPromise = restoreStoredSession();
+  await delay(SPLASH_MS);
 
-  window.setTimeout(() => {
-    if (state.session) {
-      routeAfterLogin();
-    } else {
-      showScreen('login');
-    }
-  }, SPLASH_MS);
+  const session = await sessionPromise.catch(() => null);
+  if (session) {
+    await routeAfterLogin();
+    return;
+  }
+
+  showScreen('login');
 }
 
 async function routeAfterLogin() {
-  if (isDespia) {
-    await checkEntitlements();
-    return;
-  }
-
-  state.entitlements = [];
-  state.entitlementLoadError = false;
-  renderTiles();
-}
-
-function configureLoginMode() {
-  const loginForm = byId('login-form');
-  const appleButton = byId('despia-apple');
-  const registerLink = byId('show-register');
-  const copy = byId('login-copy');
-
-  if (isDespia) {
-    loginForm.classList.add('hidden');
-    registerLink.classList.add('hidden');
-    appleButton.classList.remove('hidden');
-    appleButton.disabled = typeof window.despia === 'function' && !clerkReady;
-    copy.textContent = 'Melde dich in Despia mit Apple an.';
-
-    if (typeof window.despia === 'function') {
-      window.despia(CLERK_CONFIG_URL);
-    }
-
-    return;
-  }
-
-  loginForm.classList.remove('hidden');
-  registerLink.classList.remove('hidden');
-  appleButton.classList.add('hidden');
-  appleButton.disabled = true;
-  copy.textContent = 'Melde dich mit Email und Passwort an, um deine clar Apps zu oeffnen.';
-}
-
-async function restoreSessionFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
-  const accessToken = params.get('access_token') || hash.get('access_token');
-  const refreshToken = params.get('refresh_token') || hash.get('refresh_token');
-
-  if (!accessToken || !refreshToken) return;
-
-  const { data, error } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken
-  });
-
-  if (!error) {
-    state.session = data.session;
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-}
-
-function isReviewerSession(session) {
-  return session?.user?.email?.toLowerCase() === REVIEWER_EMAIL;
-}
-
-async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) throw error;
-  state.session = data.session;
-  state.reviewer = isReviewerSession(data.session);
-  return data.session;
-}
-
-async function signUp(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) throw error;
-
-  if (data.session) {
-    state.session = data.session;
-    state.reviewer = isReviewerSession(data.session);
-    return data.session;
-  }
-
-  return signIn(email, password);
-}
-
-async function checkEntitlements() {
   if (!state.session) {
     showScreen('login');
     return;
   }
 
-  if (!isDespia) {
-    renderTiles();
-    return;
-  }
-
   showScreen('entitlement');
-  setStatus('entitlement-status', 'Wir pruefen deine Freischaltungen.');
+  setStatus('entitlement-status', 'Wir prüfen deine Freischaltungen.');
+  await loadAccess();
+  renderTiles();
+}
 
-  if (state.reviewer) {
-    state.entitlements = [{ app: 'all', active: true }];
-    state.entitlementLoadError = false;
-    renderTiles();
-    return;
+async function restoreStoredSession() {
+  const storedSession = readStoredSession();
+
+  if (storedSession?.access_token && storedSession?.refresh_token) {
+    const { data, error } = await supabase.auth.setSession({
+      access_token: storedSession.access_token,
+      refresh_token: storedSession.refresh_token
+    });
+
+    if (!error && data.session) {
+      state.session = data.session;
+      storeSession(data.session);
+      return data.session;
+    }
+
+    clearStoredSession();
   }
+
+  const { data } = await supabase.auth.getSession();
+  state.session = data.session;
+  if (data.session) storeSession(data.session);
+  return data.session;
+}
+
+async function signIn(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  if (!data.session) throw new Error('Keine Supabase-Session erhalten.');
+
+  state.session = data.session;
+  storeSession(data.session);
+  return data.session;
+}
+
+function readStoredSession() {
+  try {
+    return JSON.parse(window.localStorage.getItem(SESSION_STORAGE_KEY) || 'null');
+  } catch (_error) {
+    return null;
+  }
+}
+
+function storeSession(session) {
+  if (!session) return;
 
   try {
-    state.entitlements = await loadRevenueCatEntitlements();
-    state.entitlementLoadError = false;
-    renderTiles();
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
   } catch (_error) {
-    state.entitlements = [];
-    state.entitlementLoadError = true;
-    renderTiles();
+    // Strict storage settings should not block a successful login.
   }
+}
+
+function clearStoredSession() {
+  try {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch (_error) {
+    // Ignore storage failures; Supabase still keeps the in-memory session.
+  }
+}
+
+async function loadAccess() {
+  state.subscriberApps = new Set();
+  state.groupApps = new Set();
+  state.activeGroupIds = [];
+  state.entitlementLoadError = false;
+
+  try {
+    const userId = state.session.user.id;
+    const [subscribersResult, groupMembersResult] = await Promise.all([
+      supabase
+        .from('subscribers')
+        .select('app, subscribed')
+        .eq('user_id', userId)
+        .eq('subscribed', true),
+      supabase
+        .from('group_members')
+        .select('group_id, status')
+        .eq('user_id', userId)
+        .eq('status', 'active')
+    ]);
+
+    if (subscribersResult.error) throw subscribersResult.error;
+    if (groupMembersResult.error) throw groupMembersResult.error;
+
+    state.subscriberApps = new Set(
+      (subscribersResult.data || [])
+        .map((row) => appKeyFromValue(row.app))
+        .filter(Boolean)
+    );
+
+    state.activeGroupIds = (groupMembersResult.data || [])
+      .filter((row) => row.status === 'active' && row.group_id)
+      .map((row) => row.group_id);
+
+    if (state.activeGroupIds.length) {
+      await loadGroupApps(state.activeGroupIds);
+    }
+  } catch (_error) {
+    state.entitlementLoadError = true;
+  }
+}
+
+async function loadGroupApps(groupIds) {
+  const uniqueGroupIds = [...new Set(groupIds)];
+  const { data, error } = await supabase
+    .from('groups')
+    .select('*')
+    .in('id', uniqueGroupIds);
+
+  if (error) throw error;
+
+  (data || []).forEach((group) => {
+    extractAppsFromGroup(group).forEach((appKey) => state.groupApps.add(appKey));
+  });
+}
+
+function extractAppsFromGroup(group) {
+  const appKeys = new Set();
+
+  Object.entries(group || {}).forEach(([field, value]) => {
+    if (value === true) {
+      const keyFromField = appKeyFromValue(field);
+      if (keyFromField) appKeys.add(keyFromField);
+      return;
+    }
+
+    collectAppValues(value).forEach((candidate) => {
+      const appKey = appKeyFromValue(candidate);
+      if (appKey) appKeys.add(appKey);
+    });
+  });
+
+  return appKeys;
+}
+
+function collectAppValues(value) {
+  if (value == null || typeof value === 'boolean' || typeof value === 'number') return [];
+
+  if (Array.isArray(value)) {
+    return value.flatMap(collectAppValues);
+  }
+
+  if (typeof value === 'object') {
+    const values = [];
+    Object.entries(value).forEach(([field, nestedValue]) => {
+      if (nestedValue === true) values.push(field);
+      values.push(...collectAppValues(nestedValue));
+    });
+    return values;
+  }
+
+  const text = String(value).trim();
+  if (!text) return [];
+
+  if ((text.startsWith('[') && text.endsWith(']')) || (text.startsWith('{') && text.endsWith('}'))) {
+    try {
+      return collectAppValues(JSON.parse(text));
+    } catch (_error) {
+      return [text];
+    }
+  }
+
+  return text.split(/[,;|]+/).map((item) => item.trim()).filter(Boolean);
 }
 
 function renderTiles() {
   const tiles = byId('tiles');
   const copy = byId('tiles-copy');
+  const subscriptionActions = byId('subscription-actions');
   tiles.textContent = '';
 
-  const hasAnyEntitlement = state.reviewer || state.entitlements.some(isActiveEntitlement);
-  copy.textContent = !isDespia
-    ? 'Wähle eine App aus.'
-    : state.reviewer
-    ? 'Reviewer-Zugang aktiv: alle Apps sind freigeschaltet.'
-    : state.entitlementLoadError
-      ? 'RevenueCat konnte nicht geladen werden. Alle Apps sind gesperrt - tippe auf Freischalten.'
-    : hasAnyEntitlement
-      ? 'Wähle eine App aus.'
-      : 'Noch kein aktives Abo gefunden. Tippe auf Freischalten, um die RevenueCat Paywall zu oeffnen.';
+  const lockedApps = apps.filter((app) => !hasAppAccess(app));
+  copy.textContent = state.entitlementLoadError
+    ? 'Freischaltungen konnten nicht geladen werden. Gesperrte Apps kannst du über dein Abo freischalten.'
+    : state.activeGroupIds.length
+      ? 'Wähle eine App aus. Aktive Familienfreigaben sind berücksichtigt.'
+      : 'Wähle eine App aus.';
 
-  const activeApps = apps.filter((app) => !app.soon);
-  const upcomingApps = apps.filter((app) => app.soon);
+  subscriptionActions.classList.toggle('active', lockedApps.length > 0);
 
-  appendTileSection(tiles, 'Aktiv');
-  activeApps.forEach((app) => {
+  appendTileSection(tiles, 'AKTIV');
+  apps.filter((app) => !app.soon).forEach((app) => {
     tiles.appendChild(createTile(app));
   });
 
-  if (upcomingApps.length) {
-    appendTileSection(tiles, 'Demnächst');
-    upcomingApps.forEach((app) => {
-      tiles.appendChild(createTile(app));
-    });
-  }
+  appendTileSection(tiles, 'DEMNÄCHST');
+  apps.filter((app) => app.soon).forEach((app) => {
+    tiles.appendChild(createTile(app));
+  });
 
   showScreen('tiles');
 }
@@ -528,11 +515,11 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const unlocked = !app.soon && (!isDespia || hasAppEntitlement(app));
-  const tile = document.createElement(unlocked ? 'a' : 'div');
+  const unlocked = hasAppAccess(app);
+  const tile = document.createElement(unlocked && app.url ? 'a' : 'div');
   tile.className = `tile${unlocked ? '' : ' locked'}${app.soon ? ' soon' : ''}`;
 
-  if (unlocked) {
+  if (unlocked && app.url) {
     tile.href = withSessionTokens(app.url);
   }
 
@@ -561,162 +548,59 @@ function createTile(app) {
     soon.className = 'soon-badge';
     soon.textContent = 'bald';
     action.appendChild(soon);
-  } else if (unlocked) {
-    action.textContent = '›';
-  } else {
-    const lock = createLockIcon();
-
-    const unlock = document.createElement('button');
-    unlock.className = 'unlock-button';
-    unlock.type = 'button';
-    unlock.textContent = 'Freischalten';
-    unlock.addEventListener('click', async () => {
-      await startCheckout(app);
-    });
-
-    action.append(lock, unlock);
   }
 
+  action.appendChild(unlocked ? createActionText('›') : createActionText('🔒', 'lock'));
   tile.append(body, action);
   return tile;
 }
 
-async function startCheckout(app) {
-  if (!isDespia || !state.session) return;
-
-  try {
-    const paywallUrl = buildRevenueCatPaywallUrl(app);
-    if (typeof window.despia === 'function') {
-      await window.despia(paywallUrl);
-      return;
-    }
-
-    window.location.href = paywallUrl;
-  } catch (_error) {
-    window.alert('RevenueCat Paywall konnte nicht geoeffnet werden.');
-  }
+function createActionText(text, className = '') {
+  const element = document.createElement('span');
+  if (className) element.className = className;
+  element.textContent = text;
+  return element;
 }
 
-async function loadRevenueCatEntitlements() {
-  if (typeof window.despia !== 'function') {
-    throw new Error('Despia bridge unavailable');
-  }
-
-  try {
-    delete window.restoredData;
-  } catch (_error) {
-    window.restoredData = undefined;
-  }
-
-  const result = await window.despia('getpurchasehistory://', ['restoredData']);
-  const purchases = normalizeRevenueCatPurchases(result?.restoredData ?? result ?? window.restoredData);
-  return purchases.map((purchase) => {
-    const item = purchase && typeof purchase === 'object' ? purchase : { product: purchase };
-
-    return {
-      app: item.entitlementId || item.entitlementIdentifier || item.entitlement || item.productIdentifier || item.productId || item.product || 'all',
-      active: item.isActive !== false && item.active !== false,
-      expires_at: item.expirationDate || item.expiresAt || item.expires_at || item.currentPeriodEnd
-    };
-  });
+function hasAppAccess(app) {
+  return state.subscriberApps.has('all')
+    || state.groupApps.has('all')
+    || state.subscriberApps.has(app.key)
+    || state.groupApps.has(app.key);
 }
 
-function normalizeRevenueCatPurchases(value) {
-  if (Array.isArray(value)) return value;
+function appKeyFromValue(value) {
+  const normalized = normalizeAppToken(value);
+  if (!normalized) return '';
+  if (['all', 'premium', 'pro'].includes(normalized)) return 'all';
 
-  if (typeof value === 'string') {
-    try {
-      return normalizeRevenueCatPurchases(JSON.parse(value));
-    } catch (_error) {
-      return [];
-    }
-  }
+  const match = apps.find((app) => (
+    app.normalizedAliases.some((alias) => normalized === alias || normalized.includes(alias) || alias.includes(normalized))
+  ));
 
-  if (value && typeof value === 'object') {
-    if (value.entitlementId || value.entitlement || value.productIdentifier || value.productId || value.product || value.isActive !== undefined) {
-      return [value];
-    }
-
-    const nested = value.restoredData || value.entitlements || value.purchases || value.activeSubscriptions;
-    return nested ? normalizeRevenueCatPurchases(nested) : Object.values(value);
-  }
-
-  return [];
+  return match?.key || '';
 }
 
-function buildRevenueCatPaywallUrl(app) {
-  const params = new URLSearchParams({
-    external_id: state.session.user.id,
-    offering: app.revenueCatOffering || REVENUECAT_OFFERING
-  });
-
-  return `revenuecat://launchPaywall?${params.toString()}`;
-}
-
-function createLockIcon() {
-  const lock = document.createElement('span');
-  lock.className = 'lock';
-  lock.setAttribute('aria-hidden', 'true');
-  lock.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none">
-      <path d="M7 10V8a5 5 0 0 1 10 0v2" stroke-width="1.8" stroke-linecap="round"/>
-      <path d="M6.5 10h11A1.5 1.5 0 0 1 19 11.5v7A1.5 1.5 0 0 1 17.5 20h-11A1.5 1.5 0 0 1 5 18.5v-7A1.5 1.5 0 0 1 6.5 10Z" stroke-width="1.8" stroke-linejoin="round"/>
-      <path d="M12 14v2" stroke-width="1.8" stroke-linecap="round"/>
-    </svg>
-  `;
-  return lock;
-}
-
-function hasAppEntitlement(app) {
-  if (state.reviewer) return true;
-
-  const activeEntitlements = state.entitlements.filter(isActiveEntitlement);
-  if (!activeEntitlements.length) return false;
-
-  return activeEntitlements.some((entitlement) => {
-    const appValue = findAppValue(entitlement);
-    if (!appValue) return true;
-
-    const normalized = String(appValue).toLowerCase();
-    return ['all', 'premium', 'pro'].includes(normalized) || app.aliases.some((alias) => normalized.includes(alias));
-  });
-}
-
-function isActiveEntitlement(entitlement) {
-  if (!entitlement) return false;
-
-  const status = String(entitlement.status || entitlement.subscription_status || '').toLowerCase();
-  if (['canceled', 'cancelled', 'expired', 'inactive', 'past_due', 'unpaid'].includes(status)) {
-    return false;
-  }
-
-  if (entitlement.active === false || entitlement.enabled === false) return false;
-
-  const expiresAt = entitlement.expires_at || entitlement.valid_until || entitlement.current_period_end;
-  if (expiresAt && new Date(expiresAt).getTime() < Date.now()) return false;
-
-  return true;
-}
-
-function findAppValue(entitlement) {
-  const fields = ['app', 'app_key', 'product', 'product_key', 'slug', 'name', 'scope', 'plan'];
-  for (const field of fields) {
-    if (entitlement[field]) return entitlement[field];
-  }
-  return '';
+function normalizeAppToken(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '');
 }
 
 function withSessionTokens(url) {
   const target = new URL(url);
-  target.searchParams.set('access_token', state.session.access_token);
-  target.searchParams.set('refresh_token', state.session.refresh_token);
+  if (state.session?.access_token) target.searchParams.set('access_token', state.session.access_token);
+  if (state.session?.refresh_token) target.searchParams.set('refresh_token', state.session.refresh_token);
   return target.toString();
 }
 
 function openReviewerModal() {
+  byId('reviewer-email').value = '';
+  byId('reviewer-password').value = '';
   byId('reviewer-modal').classList.add('active');
-  byId('reviewer-email').value = REVIEWER_EMAIL;
-  byId('reviewer-password').focus();
+  byId('reviewer-email').focus();
 }
 
 function closeReviewerModal() {
@@ -752,8 +636,6 @@ function wireEvents() {
     });
   });
 
-  byId('show-register').addEventListener('click', () => showScreen('register'));
-  byId('show-login').addEventListener('click', () => showScreen('login'));
   byId('close-reviewer').addEventListener('click', closeReviewerModal);
   byId('reviewer-modal').addEventListener('click', (event) => {
     if (event.target.id === 'reviewer-modal') closeReviewerModal();
@@ -761,16 +643,6 @@ function wireEvents() {
 
   byId('billing-settings').addEventListener('click', () => {
     window.open(STRIPE_BILLING_URL, '_blank', 'noopener');
-  });
-
-  byId('despia-apple').addEventListener('click', () => {
-    if (typeof window.despia === 'function') {
-      if (!clerkReady) return;
-      window.despia(CLERK_APPLE_URL);
-      return;
-    }
-
-    window.location.href = CLERK_APPLE_URL;
   });
 
   byId('login-form').addEventListener('submit', async (event) => {
@@ -789,46 +661,15 @@ function wireEvents() {
     }
   });
 
-  byId('register-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const password = byId('register-password').value;
-    const passwordRepeat = byId('register-password-repeat').value;
-
-    if (password !== passwordRepeat) {
-      setStatus('register-status', 'Die Passwoerter stimmen nicht ueberein.', true);
-      return;
-    }
-
-    const button = byId('register-submit');
-    setBusy(button, true, 'Erstellen...');
-    setStatus('register-status');
-
-    try {
-      await signUp(byId('register-email').value.trim(), password);
-      await routeAfterLogin();
-    } catch (error) {
-      setStatus('register-status', error.message || 'Registrierung fehlgeschlagen.', true);
-    } finally {
-      setBusy(button, false);
-    }
-  });
-
   byId('reviewer-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-
-    const email = byId('reviewer-email').value.trim().toLowerCase();
-    if (email !== REVIEWER_EMAIL) {
-      setStatus('reviewer-status', 'Nur reviewer@clar.app ist fuer diesen Zugang freigeschaltet.', true);
-      return;
-    }
 
     const button = byId('reviewer-submit');
     setBusy(button, true, 'Anmelden...');
     setStatus('reviewer-status');
 
     try {
-      await signIn(email, byId('reviewer-password').value);
-      state.reviewer = true;
+      await signIn(byId('reviewer-email').value.trim(), byId('reviewer-password').value);
       closeReviewerModal();
       await routeAfterLogin();
     } catch (error) {
@@ -840,7 +681,11 @@ function wireEvents() {
 
   supabase.auth.onAuthStateChange((_event, session) => {
     state.session = session;
-    state.reviewer = isReviewerSession(session);
+    if (session) {
+      storeSession(session);
+    } else {
+      clearStoredSession();
+    }
   });
 }
 
