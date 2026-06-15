@@ -588,7 +588,7 @@ function getCheckoutPriceId() {
 
 async function startCheckout() {
   if (!state.session?.user?.id) {
-    setStatus('paywall-status', 'Bitte melde dich zuerst an.', true);
+    setStatus('paywall-status', 'Bitte melde dich an, um fortzufahren.', true);
     showScreen('login');
     return;
   }
@@ -633,16 +633,8 @@ async function startCheckout() {
 }
 
 async function initialRoute() {
-  const sessionPromise = restoreStoredSession();
   await delay(SPLASH_MS);
-
-  const session = await sessionPromise.catch(() => null);
-  if (session) {
-    await routeAfterLogin();
-    return;
-  }
-
-  showScreen('login');
+  showScreen('tiles');
 }
 
 async function routeAfterLogin() {
