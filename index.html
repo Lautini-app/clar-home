@@ -717,7 +717,8 @@ async function signIn(email, password) {
 
   state.session = data.session;
   storeSession(data.session);
-  updateLoginButton();
+  const _btn2 = byId('open-login');
+  if (_btn2) { _btn2.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
   return data.session;
 }
 
@@ -1019,18 +1020,13 @@ function wireEvents() {
       clearStoredSession();
       await loadAccess();
       renderTiles();
-      updateLoginButton();
+      const _btn2 = byId('open-login');
+  if (_btn2) { _btn2.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
     } else {
       showScreen('login');
     }
   });
-
-function updateLoginButton() {
-  const btn = byId('open-login');
-  if (state.session) {
-    btn.textContent = 'Abmelden';
-    btn.style.display = '';
-  } else {
+ else {
     btn.textContent = 'Anmelden';
     btn.style.display = '';
   }
