@@ -87,6 +87,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .app-choice-title{font-weight:800;color:var(--text);}
 .app-choice-desc{color:var(--muted);font-size:.86rem;}
 .paywall-submit{width:100%;min-height:3.25rem;border:0;border-radius:14px;background:var(--green);color:var(--paper);font-weight:800;}
+.paywall-submit:disabled{background:var(--line);color:var(--muted);box-shadow:none;}
 .paywall-status{min-height:1.25rem;text-align:center;}
 .modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
 .modal-backdrop.active{display:flex;}
@@ -480,18 +481,19 @@ function renderAppSelection() {
     ? 'Wähle genau 1 App.'
     : 'Wähle genau 2 Apps.';
 
-  const selectedCount = state.paywall.selectedApps.size;
+  const selectedCount = getSelectedCheckoutApps().length;
   const selectionFull = selectedCount >= requiredApps;
 
   appOptions.forEach((option) => {
     const checkbox = document.querySelector(`[data-app-checkbox][value="${option.key}"]`);
     const choice = document.querySelector(`[data-app-choice="${option.key}"]`);
-    const isSelected = state.paywall.selectedApps.has(option.key);
+    const isSelected = option.available && state.paywall.selectedApps.has(option.key);
     const isDisabled = !option.available || (selectionFull && !isSelected);
 
     checkbox.checked = isSelected;
     checkbox.disabled = isDisabled;
     choice.classList.toggle('disabled', isDisabled);
+    choice.setAttribute('aria-disabled', String(isDisabled));
   });
 }
 
@@ -515,9 +517,17 @@ function selectPlan(plan) {
 
 function toggleCheckoutApp(appKey, checked) {
   const requiredApps = getRequiredAppCount();
+  const isAvailable = isCheckoutAppAvailable(appKey);
+
+  if (!isAvailable || requiredApps === 0) {
+    state.paywall.selectedApps.delete(appKey);
+    setStatus('paywall-status');
+    renderPaywall();
+    return;
+  }
 
   if (checked) {
-    if (state.paywall.selectedApps.size >= requiredApps) return;
+    if (getSelectedCheckoutApps().length >= requiredApps) return;
     state.paywall.selectedApps.add(appKey);
   } else {
     state.paywall.selectedApps.delete(appKey);
@@ -535,7 +545,11 @@ function limitSelectedApps() {
     return;
   }
 
-  while (state.paywall.selectedApps.size > requiredApps) {
+  state.paywall.selectedApps.forEach((appKey) => {
+    if (!isCheckoutAppAvailable(appKey)) state.paywall.selectedApps.delete(appKey);
+  });
+
+  while (getSelectedCheckoutApps().length > requiredApps) {
     const lastSelected = [...state.paywall.selectedApps].at(-1);
     state.paywall.selectedApps.delete(lastSelected);
   }
@@ -549,19 +563,23 @@ function getRequiredAppCount() {
 
 function isPaywallSelectionComplete() {
   const requiredApps = getRequiredAppCount();
-  return requiredApps === 0 || state.paywall.selectedApps.size === requiredApps;
+  return requiredApps === 0 || getSelectedCheckoutApps().length === requiredApps;
 }
 
 function getSelectedCheckoutApps() {
   if (state.paywall.plan === 'all') return ['all'];
-  return [...state.paywall.selectedApps];
+  return [...state.paywall.selectedApps].filter(isCheckoutAppAvailable);
+}
+
+function isCheckoutAppAvailable(appKey) {
+  return appOptions.some((option) => option.key === appKey && option.available);
 }
 
 function getCheckoutPriceId() {
   const { billing, plan } = state.paywall;
 
   if (plan === 'one') {
-    const [selectedApp] = state.paywall.selectedApps;
+    const [selectedApp] = getSelectedCheckoutApps();
     return checkoutPrices.one[billing][selectedApp] || '';
   }
 
