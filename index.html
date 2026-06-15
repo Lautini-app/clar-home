@@ -634,6 +634,8 @@ async function startCheckout() {
 
 async function initialRoute() {
   await delay(SPLASH_MS);
+  await loadAccess();
+  renderTiles();
   showScreen('tiles');
 }
 
