@@ -134,6 +134,31 @@ button:disabled{cursor:not-allowed;opacity:.58;}
           </form>
 
           <p id="login-status" class="status" role="status"></p>
+
+          <div style="text-align:center;margin-top:0.5rem;">
+            <button type="button" id="show-register" style="background:none;border:none;color:#2E5C3E;font-size:0.9rem;cursor:pointer;text-decoration:underline;">Neu hier? Konto erstellen</button>
+          </div>
+
+          <form id="register-form" class="form" style="display:none;">
+            <label class="field">
+              <span class="label">Email</span>
+              <input id="register-email" class="input" type="email" autocomplete="email" required>
+            </label>
+            <label class="field">
+              <span class="label">Passwort</span>
+              <span class="input-row">
+                <input id="register-password" class="input password-input" type="password" autocomplete="new-password" required>
+                <button class="eye-button" type="button" data-toggle-password="register-password" aria-label="Passwort anzeigen">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <button id="register-submit" class="primary" type="submit">Konto erstellen</button>
+          </form>
+          <p id="register-status" class="status" role="status"></p>
         </div>
       </div>
     </div>
@@ -989,6 +1014,44 @@ function wireEvents() {
   });
 
   byId('checkout-submit').addEventListener('click', startCheckout);
+
+  byId('show-register').addEventListener('click', () => {
+    const rf = byId('register-form');
+    const lf = byId('login-form');
+    const sr = byId('show-register');
+    if (rf.style.display === 'none') {
+      rf.style.display = 'flex';
+      lf.style.display = 'none';
+      sr.textContent = 'Bereits registriert? Anmelden';
+    } else {
+      rf.style.display = 'none';
+      lf.style.display = 'flex';
+      sr.textContent = 'Neu hier? Konto erstellen';
+    }
+  });
+
+  byId('register-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const button = byId('register-submit');
+    setBusy(button, true, 'Konto wird erstellt...');
+    setStatus('register-status', '');
+    const email = byId('register-email').value.trim();
+    const password = byId('register-password').value;
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      if (data.session) {
+        state.session = data.session;
+        await routeAfterLogin();
+      } else {
+        setStatus('register-status', 'Bitte bestätige deine Email-Adresse.');
+      }
+    } catch (err) {
+      setStatus('register-status', err.message || 'Registrierung fehlgeschlagen.', true);
+    } finally {
+      setBusy(button, false, 'Konto erstellen');
+    }
+  });
 
   byId('login-form').addEventListener('submit', async (event) => {
     event.preventDefault();
