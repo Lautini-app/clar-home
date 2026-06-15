@@ -42,32 +42,26 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .password-input{padding-right:3.25rem;}
 .eye-button{position:absolute;right:.35rem;top:50%;display:grid;width:2.5rem;height:2.5rem;place-items:center;transform:translateY(-50%);border:0;border-radius:.75rem;background:transparent;color:var(--green);}
 .eye-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
-.primary,.billing-button{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
+.primary{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
 .primary{border:0;background:var(--green);color:var(--paper);}
 .status{min-height:1.25rem;color:var(--muted);font-size:.9rem;line-height:1.35;text-align:center;}
 .status.error{color:var(--danger);}
 .tiles{display:flex;width:100%;max-width:34rem;flex-direction:column;gap:.85rem;}
 .tile-section{width:100%;margin:.35rem 0 -.2rem;color:var(--muted);font-size:.73rem;font-weight:800;letter-spacing:.08em;text-align:left;text-transform:uppercase;}
 .tile{display:flex;min-height:5.85rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-decoration:none;color:var(--text);box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
-.tile:not(.locked):active{transform:scale(.99);}
+.tile:active{transform:scale(.99);}
 .tile-icon{display:grid;flex:0 0 auto;width:3rem;height:3rem;place-items:center;border-radius:.9rem;font-size:1.3rem;}
 .tile-body{display:flex;min-width:0;flex:1;align-items:center;gap:.85rem;text-align:left;}
 .tile-text{min-width:0;}
 .tile-name{font-size:1.35rem;font-weight:800;letter-spacing:-.04em;color:var(--green);}
 .tile-desc{margin-top:.2rem;color:var(--muted);font-size:.9rem;}
 .tile-action{display:flex;align-items:center;gap:.55rem;color:var(--green);font-size:1.65rem;font-weight:650;line-height:1;white-space:nowrap;}
-.lock{font-size:1.15rem;}
-.soon{opacity:.62;}
 .soon-badge{display:inline-flex;align-items:center;border-radius:999px;background:var(--soft);padding:.15rem .45rem;color:var(--muted);font-size:.66rem;font-weight:800;letter-spacing:.02em;}
-.subscription-actions{display:none;width:100%;max-width:34rem;grid-template-columns:1fr;gap:.75rem;margin-top:.25rem;}
-.subscription-actions.active{display:grid;}
-.billing-button{display:flex;align-items:center;justify-content:center;border:1px solid var(--green);background:transparent;color:var(--green);text-decoration:none;}
-.billing-button.primary-link{border:0;background:var(--green);color:var(--paper);}
-.topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.subscription-actions{display:flex;width:100%;max-width:34rem;flex-wrap:wrap;align-items:center;justify-content:center;gap:.35rem 1rem;margin-top:.1rem;}
+.billing-button{color:var(--green);font-size:.82rem;font-weight:650;text-decoration:none;}
+.billing-button:hover,.billing-button:focus-visible,.billing-button:active{text-decoration:underline;}
+.topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:center;margin-bottom:1rem;}
 .topbar .logo{font-size:2rem;}
-.topbar-spacer,.settings-button{width:2.6rem;height:2.6rem;}
-.settings-button{display:grid;place-items:center;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.72);color:var(--green);box-shadow:0 .4rem 1rem rgba(46,92,62,.08);}
-.settings-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
 .modal-backdrop{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;background:rgba(28,46,28,.38);padding:1.25rem;}
 .modal-backdrop.active{display:flex;}
 .modal{width:100%;max-width:23rem;border-radius:1.35rem;background:var(--paper);padding:1.2rem;box-shadow:0 1.5rem 4rem rgba(28,46,28,.24);}
@@ -133,22 +127,14 @@ button:disabled{cursor:not-allowed;opacity:.58;}
   <section id="tiles-screen" class="screen" aria-labelledby="tiles-title">
     <div class="stack center" style="max-width:34rem">
       <div class="topbar">
-        <span class="topbar-spacer" aria-hidden="true"></span>
         <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
-        <button id="billing-settings" class="settings-button" type="button" aria-label="Abo verwalten">
-          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <path d="M12 8.2A3.8 3.8 0 1 1 12 15.8A3.8 3.8 0 0 1 12 8.2Z" stroke-width="1.8"/>
-            <path d="M19.4 13.4a7.8 7.8 0 0 0 .05-2.8l2-1.55-2-3.45-2.5 1a8 8 0 0 0-2.4-1.4L14.2 2h-4.4l-.35 3.2a8 8 0 0 0-2.4 1.4l-2.5-1-2 3.45 2 1.55a7.8 7.8 0 0 0 .05 2.8l-2.05 1.6 2 3.45 2.55-1a8 8 0 0 0 2.35 1.35l.35 3.2h4.4l.35-3.2a8 8 0 0 0 2.35-1.35l2.55 1 2-3.45-2.05-1.6Z" stroke-width="1.8" stroke-linejoin="round"/>
-          </svg>
-        </button>
       </div>
       <div>
         <h1 id="tiles-title" class="title">Deine clar Apps</h1>
-        <p id="tiles-copy" class="copy">Wähle eine App aus.</p>
       </div>
       <div id="tiles" class="tiles" aria-live="polite"></div>
-      <div id="subscription-actions" class="subscription-actions" aria-label="Abo Optionen">
-        <a class="billing-button primary-link" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo abschliessen</a>
+      <div class="subscription-actions" aria-label="Abo Optionen">
+        <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo abschliessen</a>
         <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo verwalten</a>
       </div>
     </div>
@@ -192,7 +178,6 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
-const STRIPE_BILLING_URL = 'https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00';
 const SESSION_STORAGE_KEY = 'clar.supabase.session';
 const SPLASH_MS = 1500;
 
@@ -481,20 +466,8 @@ function collectAppValues(value) {
 
 function renderTiles() {
   const tiles = byId('tiles');
-  const copy = byId('tiles-copy');
-  const subscriptionActions = byId('subscription-actions');
   tiles.textContent = '';
 
-  const lockedApps = apps.filter((app) => !hasAppAccess(app));
-  copy.textContent = state.entitlementLoadError
-    ? 'Freischaltungen konnten nicht geladen werden. Gesperrte Apps kannst du über dein Abo freischalten.'
-    : state.activeGroupIds.length
-      ? 'Wähle eine App aus. Aktive Familienfreigaben sind berücksichtigt.'
-      : 'Wähle eine App aus.';
-
-  subscriptionActions.classList.toggle('active', lockedApps.length > 0);
-
-  appendTileSection(tiles, 'AKTIV');
   apps.filter((app) => !app.soon).forEach((app) => {
     tiles.appendChild(createTile(app));
   });
@@ -515,11 +488,10 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const unlocked = hasAppAccess(app);
-  const tile = document.createElement(unlocked && app.url ? 'a' : 'div');
-  tile.className = `tile${unlocked ? '' : ' locked'}${app.soon ? ' soon' : ''}`;
+  const tile = document.createElement(app.url ? 'a' : 'div');
+  tile.className = `tile${app.soon ? ' soon' : ''}`;
 
-  if (unlocked && app.url) {
+  if (app.url) {
     tile.href = withSessionTokens(app.url);
   }
 
@@ -550,7 +522,7 @@ function createTile(app) {
     action.appendChild(soon);
   }
 
-  action.appendChild(unlocked ? createActionText('›') : createActionText('🔒', 'lock'));
+  action.appendChild(createActionText('›'));
   tile.append(body, action);
   return tile;
 }
@@ -639,10 +611,6 @@ function wireEvents() {
   byId('close-reviewer').addEventListener('click', closeReviewerModal);
   byId('reviewer-modal').addEventListener('click', (event) => {
     if (event.target.id === 'reviewer-modal') closeReviewerModal();
-  });
-
-  byId('billing-settings').addEventListener('click', () => {
-    window.open(STRIPE_BILLING_URL, '_blank', 'noopener');
   });
 
   byId('login-form').addEventListener('submit', async (event) => {
