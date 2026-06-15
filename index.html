@@ -182,6 +182,13 @@ button:disabled{cursor:not-allowed;opacity:.58;}
     </div>
   </section>
 
+  <section id="app-screen" class="screen" style="padding:0;background:#fff;">
+    <div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:100;background:#2E5C3E;color:#F5F3EE;display:flex;align-items:center;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));font-size:15px;font-weight:600;">
+      <button onclick="closeApp()" style="background:none;border:none;color:#F5F3EE;font-size:15px;font-weight:600;cursor:pointer;padding:0;">← clar</button>
+    </div>
+    <iframe id="app-iframe" src="" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;border:none;padding-top:max(44px,calc(44px + env(safe-area-inset-top)));box-sizing:border-box;"></iframe>
+  </section>
+
   <section id="tiles-screen" class="screen" aria-labelledby="tiles-title">
     <div class="stack center" style="max-width:34rem">
       <div class="topbar">
@@ -423,6 +430,7 @@ const screens = {
   login: document.querySelector('#login-screen'),
   entitlement: document.querySelector('#entitlement-screen'),
   tiles: document.querySelector('#tiles-screen'),
+  app: document.querySelector('#app-screen'),
   paywall: document.querySelector('#paywall-screen')
 };
 
@@ -441,6 +449,18 @@ const state = {
 };
 
 const byId = (id) => document.getElementById(id);
+
+function openApp(url) {
+  const iframe = byId('app-iframe');
+  iframe.src = url;
+  showScreen('app');
+}
+
+function closeApp() {
+  const iframe = byId('app-iframe');
+  showScreen('tiles');
+  setTimeout(() => { iframe.src = ''; }, 300);
+}
 
 function updateLoginButton() {
   const btn = byId('open-login');
@@ -895,11 +915,15 @@ function appendTileSection(container, label) {
 function createTile(app) {
   const hasAccess = app.soon ? false : hasAppAccess(app);
   const isLocked = !app.soon && !hasAccess;
-  const tile = document.createElement(hasAccess ? 'a' : 'div');
+  const tile = document.createElement('div');
+  tile.style.cursor = hasAccess ? 'pointer' : 'default';
   tile.className = `tile${app.soon ? ' soon' : ''}${isLocked ? ' locked' : ''}`;
 
   if (hasAccess && app.url) {
-    tile.href = withSessionTokens(app.url);
+    tile.addEventListener('click', (e) => {
+      e.preventDefault();
+      openApp(withSessionTokens(app.url));
+    });
     tile.style.cursor = 'pointer';
   } else if (isLocked) {
     tile.style.cursor = 'pointer';
