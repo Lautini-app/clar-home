@@ -462,18 +462,6 @@ function closeApp() {
   setTimeout(() => { iframe.src = ''; }, 300);
 }
 
-function openApp(url) {
-  const iframe = byId('app-iframe');
-  iframe.src = url;
-  showScreen('app');
-}
-
-function closeApp() {
-  const iframe = byId('app-iframe');
-  showScreen('tiles');
-  setTimeout(() => { iframe.src = ''; }, 300);
-}
-
 function updateLoginButton() {
   const btn = byId('open-login');
   if (state.session) {
