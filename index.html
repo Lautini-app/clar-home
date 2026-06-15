@@ -664,13 +664,6 @@ async function startCheckout() {
   }
 }
 
-function updateLoginButton() {
-  const btn = byId('open-login');
-  if (state.session) {
-    btn.textContent = 'Abmelden';
-    btn.style.display = '';
-  }
-
 async function initialRoute() {
   await delay(SPLASH_MS);
   await loadAccess();
@@ -1029,7 +1022,13 @@ function wireEvents() {
       showScreen('login');
     }
   });
- else {
+
+function updateLoginButton() {
+  const btn = byId('open-login');
+  if (state.session) {
+    btn.textContent = 'Abmelden';
+    btn.style.display = '';
+  } else {
     btn.textContent = 'Anmelden';
     btn.style.display = '';
   }
