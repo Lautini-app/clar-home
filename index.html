@@ -130,7 +130,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
       </div>
       <div>
-        <h1 id="tiles-title" class="title">Deine clar Apps</h1>
+        <h1 id="tiles-title" class="title">Deine clar·Apps</h1>
       </div>
       <div id="tiles" class="tiles" aria-live="polite"></div>
       <div class="subscription-actions" aria-label="Abo Optionen">
@@ -488,10 +488,10 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const tile = document.createElement(app.url ? 'a' : 'div');
+  const tile = document.createElement(app.url && !app.soon ? 'a' : 'div');
   tile.className = `tile${app.soon ? ' soon' : ''}`;
 
-  if (app.url) {
+  if (app.url && !app.soon) {
     tile.href = withSessionTokens(app.url);
   }
 
@@ -522,7 +522,10 @@ function createTile(app) {
     action.appendChild(soon);
   }
 
-  action.appendChild(createActionText('›'));
+  if (!app.soon) {
+    action.appendChild(createActionText('›'));
+  }
+
   tile.append(body, action);
   return tile;
 }
