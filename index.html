@@ -265,13 +265,12 @@ button:disabled{cursor:not-allowed;opacity:.58;}
               <span class="app-choice-desc">Haushaltsorganisation</span>
             </span>
           </label>
-          <label class="app-choice disabled" data-app-choice="log">
-            <input type="checkbox" value="log" data-app-checkbox disabled>
+          <label class="app-choice" data-app-choice="log">
+            <input type="checkbox" value="log" data-app-checkbox>
             <span class="app-choice-text">
               <span class="app-choice-title">clar·log</span>
               <span class="app-choice-desc">Stimulanzien-Tagebuch</span>
             </span>
-            <span class="soon-badge">bald</span>
           </label>
           <label class="app-choice disabled" data-app-choice="tag">
             <input type="checkbox" value="tag" data-app-checkbox disabled>
@@ -388,11 +387,13 @@ const checkoutPrices = {
   one: {
     monthly: {
       markt: 'price_1TWZJGQeJhPuH3BxgpJ7prEp',
-      heim: 'price_1TYO4XQeJhPuH3BxRUWtRr8V'
+      heim: 'price_1TYO4XQeJhPuH3BxRUWtRr8V',
+      log: 'price_1TWZJGQeJhPuH3BxgpJ7prEp'
     },
     yearly: {
       markt: 'price_1TWZHUQeJhPuH3BxeDNHGXqo',
-      heim: 'price_1TYO5XQeJhPuH3BxSRG25Bp2'
+      heim: 'price_1TYO5XQeJhPuH3BxSRG25Bp2',
+      log: 'price_1TWZHUQeJhPuH3BxeDNHGXqo'
     }
   },
   two: {
@@ -421,7 +422,7 @@ const planPrices = {
 const appOptions = [
   { key: 'markt', available: true },
   { key: 'heim', available: true },
-  { key: 'log', available: false },
+  { key: 'log', available: true },
   { key: 'tag', available: false }
 ];
 
