@@ -272,13 +272,12 @@ button:disabled{cursor:not-allowed;opacity:.58;}
               <span class="app-choice-desc">Stimulanzien-Tagebuch</span>
             </span>
           </label>
-          <label class="app-choice disabled" data-app-choice="tag">
-            <input type="checkbox" value="tag" data-app-checkbox disabled>
+          <label class="app-choice" data-app-choice="tag">
+            <input type="checkbox" value="tag" data-app-checkbox>
             <span class="app-choice-text">
               <span class="app-choice-title">clar·tag</span>
               <span class="app-choice-desc">Tagesstruktur & Routinen</span>
             </span>
-            <span class="soon-badge">bald</span>
           </label>
         </div>
       </section>
@@ -374,8 +373,7 @@ const apps = [
     description: 'Tagesstruktur & Routinen',
     icon: '🕐',
     color: '#7A5BAE',
-    url: 'https://clar.tag.lautini.ch',
-    soon: true
+    url: 'https://clar.tag.lautini.ch'
   }
 ];
 
@@ -896,12 +894,7 @@ function renderTiles() {
   const tiles = byId('tiles');
   tiles.textContent = '';
 
-  apps.filter((app) => !app.soon).forEach((app) => {
-    tiles.appendChild(createTile(app));
-  });
-
-  appendTileSection(tiles, 'DEMNÄCHST');
-  apps.filter((app) => app.soon).forEach((app) => {
+  apps.forEach((app) => {
     tiles.appendChild(createTile(app));
   });
 
@@ -916,11 +909,11 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const hasAccess = app.soon ? false : hasAppAccess(app);
-  const isLocked = !app.soon && !hasAccess;
+  const hasAccess = hasAppAccess(app);
+  const isLocked = !hasAccess;
   const tile = document.createElement('div');
   tile.style.cursor = hasAccess ? 'pointer' : 'default';
-  tile.className = `tile${app.soon ? ' soon' : ''}${isLocked ? ' locked' : ''}`;
+  tile.className = `tile${isLocked ? ' locked' : ''}`;
 
   if (hasAccess && app.url) {
     tile.addEventListener('click', (e) => {
@@ -953,12 +946,7 @@ function createTile(app) {
   const action = document.createElement('div');
   action.className = 'tile-action';
 
-  if (app.soon) {
-    const soon = document.createElement('span');
-    soon.className = 'soon-badge';
-    soon.textContent = 'bald';
-    action.appendChild(soon);
-  } else if (isLocked) {
+  if (isLocked) {
     action.appendChild(createActionText('🔒'));
   } else {
     action.appendChild(createActionText('›'));
