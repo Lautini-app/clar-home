@@ -1079,14 +1079,20 @@ function wireEvents() {
     const rf = byId('register-form');
     const lf = byId('login-form');
     const sr = byId('show-register');
+    const title = byId('login-title');
+    const copy = byId('login-copy');
     if (rf.style.display === 'none') {
       rf.style.display = 'flex';
       lf.style.display = 'none';
       sr.textContent = 'Bereits registriert? Anmelden';
+      title.textContent = 'Konto erstellen';
+      copy.textContent = 'Erstelle ein kostenloses Konto, um deine clar Apps zu nutzen.';
     } else {
       rf.style.display = 'none';
       lf.style.display = 'flex';
       sr.textContent = 'Neu hier? Konto erstellen';
+      title.textContent = 'Willkommen zu clar';
+      copy.textContent = 'Melde dich mit Email und Passwort an, um deine clar Apps zu öffnen.';
     }
   });
 
@@ -1156,6 +1162,16 @@ function wireEvents() {
 }
 
 wireEvents();
+
+// ?mode=signup → start in register mode
+if (new URLSearchParams(window.location.search).get('mode') === 'signup') {
+  byId('register-form').style.display = 'flex';
+  byId('login-form').style.display = 'none';
+  byId('show-register').textContent = 'Bereits registriert? Anmelden';
+  byId('login-title').textContent = 'Konto erstellen';
+  byId('login-copy').textContent = 'Erstelle ein kostenloses Konto, um deine clar Apps zu nutzen.';
+}
+
 initialRoute();
 </script>
 </body>
