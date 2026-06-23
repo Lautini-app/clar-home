@@ -441,8 +441,19 @@ const state = {
 
 const byId = (id) => document.getElementById(id);
 
+let currentLoadedAppOrigin = null;
+
 function openApp(url) {
   const iframe = byId('app-iframe');
+  const target = new URL(url);
+  const targetOrigin = target.origin + target.pathname.replace(/\/$/, '');
+
+  if (currentLoadedAppOrigin === targetOrigin && iframe.src && iframe.src !== '' && iframe.src !== 'about:blank') {
+    showScreen('app');
+    return;
+  }
+
+  currentLoadedAppOrigin = targetOrigin;
   iframe.src = url;
   showScreen('app');
 }
@@ -450,10 +461,26 @@ function openApp(url) {
 document.getElementById('close-app-btn').addEventListener('click', closeApp);
 
 function closeApp() {
-  const iframe = byId('app-iframe');
   showScreen('tiles');
-  setTimeout(() => { iframe.src = ''; }, 300);
 }
+
+window.addEventListener('message', (e) => {
+  let type = null;
+  if (e.data && typeof e.data === 'object') type = e.data.type;
+  if (typeof e.data === 'string') {
+    try { type = JSON.parse(e.data).type; } catch {}
+  }
+  if (type !== 'clar_request_session' && type !== 'clar:needs-session') return;
+  if (!state.session?.access_token || !state.session?.refresh_token) return;
+  const iframe = byId('app-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  const tokens = {
+    access_token: state.session.access_token,
+    refresh_token: state.session.refresh_token,
+  };
+  iframe.contentWindow.postMessage({ type: 'clar_session', ...tokens }, '*');
+  iframe.contentWindow.postMessage(JSON.stringify({ type: 'clar:session', ...tokens }), '*');
+});
 
 function updateLoginButton() {
   const btn = byId('open-login');
