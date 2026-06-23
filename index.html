@@ -83,6 +83,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .app-choice{display:flex;align-items:center;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:rgba(245,243,238,.56);padding:.8rem;text-align:left;}
 .app-choice input{width:1.1rem;height:1.1rem;accent-color:var(--green);}
 .app-choice.disabled{opacity:.56;}
+.app-choice.app-coming-soon{opacity:.5;pointer-events:none;position:relative;}
+.coming-soon-badge{display:inline-flex;align-items:center;border-radius:999px;background:rgba(91,122,174,.13);padding:.1rem .4rem;color:#5B7AAE;font-size:.6rem;font-weight:800;letter-spacing:.02em;margin-left:.3rem;vertical-align:middle;}
 .app-choice-text{display:flex;min-width:0;flex:1;flex-direction:column;gap:.12rem;}
 .app-choice-title{font-weight:800;color:var(--text);}
 .app-choice-desc{color:var(--muted);font-size:.86rem;}
@@ -95,6 +97,10 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
 .close{border:0;background:transparent;color:var(--green);font-size:1.4rem;line-height:1;}
 .hidden{display:none!important;}
+.legal-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.25rem .45rem;padding:1.5rem 0 1rem;font-size:.75rem;}
+.legal-links a{color:var(--muted);text-decoration:none;}
+.legal-links a:hover{text-decoration:underline;}
+.legal-links span{color:var(--line);}
 </style>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#2E5C3E">
@@ -193,6 +199,17 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo verwalten</a>
         <button id="open-login" class="billing-button" type="button">Anmelden</button>
       </div>
+      <nav class="legal-links" aria-label="Rechtliches">
+        <a href="https://www.iubenda.com/privacy-policy/80183735" target="_blank" rel="noopener">Datenschutz</a>
+        <span>·</span>
+        <a href="https://blog.lautini.ch/datenschutz-clar-log" target="_blank" rel="noopener">Datenschutz clar·log</a>
+        <span>·</span>
+        <a href="https://blog.lautini.ch/agb-clar-log" target="_blank" rel="noopener">AGB clar·log</a>
+        <span>·</span>
+        <a href="https://www.iubenda.com/privacy-policy/44495718/cookie-policy" target="_blank" rel="noopener">Cookie-Richtlinie</a>
+        <span>·</span>
+        <a href="https://blog.lautini.ch/impressum" target="_blank" rel="noopener">Impressum</a>
+      </nav>
     </div>
   </section>
 
@@ -255,10 +272,10 @@ button:disabled{cursor:not-allowed;opacity:.58;}
               <span class="app-choice-desc">Haushaltsorganisation</span>
             </span>
           </label>
-          <label class="app-choice" data-app-choice="log">
-            <input type="checkbox" value="log" data-app-checkbox>
+          <label class="app-choice app-coming-soon" data-app-choice="log">
+            <input type="checkbox" value="log" data-app-checkbox disabled>
             <span class="app-choice-text">
-              <span class="app-choice-title">clar·log</span>
+              <span class="app-choice-title">clar·log <span class="coming-soon-badge">bald verfügbar</span></span>
               <span class="app-choice-desc">Stimulanzien-Tagebuch</span>
             </span>
           </label>
@@ -412,7 +429,7 @@ const planPrices = {
 const appOptions = [
   { key: 'markt', available: true },
   { key: 'heim', available: true },
-  { key: 'log', available: true },
+  { key: 'log', available: false },
   { key: 'tag', available: true }
 ];
 
@@ -928,13 +945,16 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const hasAccess = hasAppAccess(app);
+  const isComingSoon = app.key === 'clarlog';
+  const hasAccess = !isComingSoon && hasAppAccess(app);
   const isLocked = !hasAccess;
   const tile = document.createElement('div');
-  tile.style.cursor = hasAccess ? 'pointer' : 'default';
   tile.className = `tile${isLocked ? ' locked' : ''}`;
 
-  if (hasAccess && app.url) {
+  if (isComingSoon) {
+    tile.style.opacity = '.5';
+    tile.style.cursor = 'default';
+  } else if (hasAccess && app.url) {
     tile.addEventListener('click', (e) => {
       e.preventDefault();
       openApp(withSessionTokens(app.url));
@@ -959,6 +979,16 @@ function createTile(app) {
   desc.className = 'tile-desc';
   name.textContent = app.name;
   desc.textContent = app.description;
+
+  if (isComingSoon) {
+    const badge = document.createElement('span');
+    badge.className = 'coming-soon-badge';
+    badge.style.fontSize = '.7rem';
+    badge.style.marginLeft = '.4rem';
+    badge.textContent = 'bald verfügbar';
+    name.appendChild(badge);
+  }
+
   text.append(name, desc);
   body.append(icon, text);
 
