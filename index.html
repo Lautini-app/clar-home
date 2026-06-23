@@ -182,6 +182,13 @@ button:disabled{cursor:not-allowed;opacity:.58;}
     </div>
   </section>
 
+  <section id="app-screen" class="screen" style="padding:0;background:#fff;">
+    <div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:100;background:#2E5C3E;color:#F5F3EE;display:flex;align-items:center;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));font-size:15px;font-weight:600;">
+      <button id="close-app-btn" style="background:none;border:none;color:#F5F3EE;font-size:15px;font-weight:600;cursor:pointer;padding:0;">← clar</button>
+    </div>
+    <iframe id="app-iframe" src="" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;border:none;padding-top:max(44px,calc(44px + env(safe-area-inset-top)));box-sizing:border-box;touch-action:manipulation;"></iframe>
+  </section>
+
   <section id="tiles-screen" class="screen" aria-labelledby="tiles-title">
     <div class="stack center" style="max-width:34rem">
       <div class="topbar">
@@ -424,6 +431,7 @@ const screens = {
   login: document.querySelector('#login-screen'),
   entitlement: document.querySelector('#entitlement-screen'),
   tiles: document.querySelector('#tiles-screen'),
+  app: document.querySelector('#app-screen'),
   paywall: document.querySelector('#paywall-screen')
 };
 
@@ -444,7 +452,17 @@ const state = {
 const byId = (id) => document.getElementById(id);
 
 function openApp(url) {
-  window.location.href = url;
+  const iframe = byId('app-iframe');
+  iframe.src = url;
+  showScreen('app');
+}
+
+document.getElementById('close-app-btn').addEventListener('click', closeApp);
+
+function closeApp() {
+  const iframe = byId('app-iframe');
+  showScreen('tiles');
+  setTimeout(() => { iframe.src = ''; }, 300);
 }
 
 function updateLoginButton() {
@@ -975,6 +993,7 @@ function normalizeAppToken(value) {
 
 function withSessionTokens(url) {
   const target = new URL(url);
+  target.searchParams.set('clar_embedded', '1');
   if (state.session?.access_token && state.session?.refresh_token) {
     target.hash = 'access_token=' + encodeURIComponent(state.session.access_token) + '&refresh_token=' + encodeURIComponent(state.session.refresh_token) + '&type=clar_sso';
   }
