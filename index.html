@@ -136,6 +136,18 @@ button:disabled{cursor:not-allowed;opacity:.58;}
                 </button>
               </span>
             </label>
+            <label id="confirm-field" class="field" style="display:none;">
+              <span class="label">Passwort wiederholen</span>
+              <span class="input-row">
+                <input id="auth-password-confirm" class="input password-input" type="password" autocomplete="new-password">
+                <button class="eye-button" type="button" data-toggle-password="auth-password-confirm" aria-label="Passwort anzeigen">
+                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
+                  </svg>
+                </button>
+              </span>
+            </label>
             <div style="display:flex;gap:.6rem;">
               <button id="register-submit" class="primary" type="button" style="flex:1;background:var(--green);color:var(--paper);">Konto erstellen</button>
               <button id="login-submit" class="primary" type="submit" style="flex:1;background:transparent;color:var(--green);border:2px solid var(--green);">Anmelden</button>
@@ -1055,11 +1067,27 @@ function wireEvents() {
 
   byId('register-submit').addEventListener('click', async () => {
     const button = byId('register-submit');
-    setBusy(button, true, 'Erstellen...');
+    const confirmField = byId('confirm-field');
+    const confirmInput = byId('auth-password-confirm');
     setStatus('auth-status', '');
     const email = byId('auth-email').value.trim();
     const password = byId('auth-password').value;
-    if (!email || !password) { setBusy(button, false, 'Konto erstellen'); return; }
+    if (!email || !password) { setStatus('auth-status', 'Bitte Email und Passwort eingeben.', true); return; }
+
+    if (confirmField.style.display === 'none') {
+      confirmField.style.display = 'flex';
+      confirmInput.required = true;
+      confirmInput.focus();
+      return;
+    }
+
+    if (password !== confirmInput.value) {
+      setStatus('auth-status', 'Passwörter stimmen nicht überein.', true);
+      confirmInput.focus();
+      return;
+    }
+
+    setBusy(button, true, 'Erstellen...');
     try {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
