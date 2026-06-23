@@ -116,19 +116,19 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <div class="stack">
           <div>
             <h1 id="login-title" class="title">Willkommen zu clar</h1>
-            <p id="login-copy" class="copy">Melde dich mit Email und Passwort an, um deine clar Apps zu öffnen.</p>
+            <p id="login-copy" class="copy">Email und Passwort eingeben.</p>
           </div>
 
-          <form id="login-form" class="form">
+          <form id="auth-form" class="form">
             <label class="field">
               <span class="label">Email</span>
-              <input id="login-email" class="input" type="email" autocomplete="email" required>
+              <input id="auth-email" class="input" type="email" autocomplete="email" required>
             </label>
             <label class="field">
               <span class="label">Passwort</span>
               <span class="input-row">
-                <input id="login-password" class="input password-input" type="password" autocomplete="current-password" required>
-                <button class="eye-button" type="button" data-toggle-password="login-password" aria-label="Passwort anzeigen">
+                <input id="auth-password" class="input password-input" type="password" autocomplete="current-password" required>
+                <button class="eye-button" type="button" data-toggle-password="auth-password" aria-label="Passwort anzeigen">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
@@ -136,35 +136,13 @@ button:disabled{cursor:not-allowed;opacity:.58;}
                 </button>
               </span>
             </label>
-            <button id="login-submit" class="primary" type="submit">Anmelden</button>
+            <div style="display:flex;gap:.6rem;">
+              <button id="register-submit" class="primary" type="button" style="flex:1;background:var(--green);color:var(--paper);">Konto erstellen</button>
+              <button id="login-submit" class="primary" type="submit" style="flex:1;background:transparent;color:var(--green);border:2px solid var(--green);">Anmelden</button>
+            </div>
           </form>
 
-          <p id="login-status" class="status" role="status"></p>
-
-          <div style="text-align:center;margin-top:0.5rem;">
-            <button type="button" id="show-register" style="background:none;border:none;color:#2E5C3E;font-size:0.9rem;cursor:pointer;text-decoration:underline;">Neu hier? Konto erstellen</button>
-          </div>
-
-          <form id="register-form" class="form" style="display:none;">
-            <label class="field">
-              <span class="label">Email</span>
-              <input id="register-email" class="input" type="email" autocomplete="email" required>
-            </label>
-            <label class="field">
-              <span class="label">Passwort</span>
-              <span class="input-row">
-                <input id="register-password" class="input password-input" type="password" autocomplete="new-password" required>
-                <button class="eye-button" type="button" data-toggle-password="register-password" aria-label="Passwort anzeigen">
-                  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z" stroke-width="1.8"/>
-                  </svg>
-                </button>
-              </span>
-            </label>
-            <button id="register-submit" class="primary" type="submit">Konto erstellen</button>
-          </form>
-          <p id="register-status" class="status" role="status"></p>
+          <p id="auth-status" class="status" role="status"></p>
         </div>
       </div>
     </div>
@@ -1075,61 +1053,40 @@ function wireEvents() {
 
   byId('checkout-submit').addEventListener('click', startCheckout);
 
-  byId('show-register').addEventListener('click', () => {
-    const rf = byId('register-form');
-    const lf = byId('login-form');
-    const sr = byId('show-register');
-    const title = byId('login-title');
-    const copy = byId('login-copy');
-    if (rf.style.display === 'none') {
-      rf.style.display = 'flex';
-      lf.style.display = 'none';
-      sr.textContent = 'Bereits registriert? Anmelden';
-      title.textContent = 'Konto erstellen';
-      copy.textContent = 'Erstelle ein kostenloses Konto, um deine clar Apps zu nutzen.';
-    } else {
-      rf.style.display = 'none';
-      lf.style.display = 'flex';
-      sr.textContent = 'Neu hier? Konto erstellen';
-      title.textContent = 'Willkommen zu clar';
-      copy.textContent = 'Melde dich mit Email und Passwort an, um deine clar Apps zu öffnen.';
-    }
-  });
-
-  byId('register-form').addEventListener('submit', async (event) => {
-    event.preventDefault();
+  byId('register-submit').addEventListener('click', async () => {
     const button = byId('register-submit');
-    setBusy(button, true, 'Konto wird erstellt...');
-    setStatus('register-status', '');
-    const email = byId('register-email').value.trim();
-    const password = byId('register-password').value;
+    setBusy(button, true, 'Erstellen...');
+    setStatus('auth-status', '');
+    const email = byId('auth-email').value.trim();
+    const password = byId('auth-password').value;
+    if (!email || !password) { setBusy(button, false, 'Konto erstellen'); return; }
     try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { error } = await supabase.auth.signUp({ email, password });
       if (error) throw error;
       const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
       if (loginError) throw loginError;
       state.session = loginData.session;
       await routeAfterLogin();
     } catch (err) {
-      setStatus('register-status', err.message || 'Registrierung fehlgeschlagen.', true);
+      setStatus('auth-status', err.message || 'Registrierung fehlgeschlagen.', true);
     } finally {
       setBusy(button, false, 'Konto erstellen');
     }
   });
 
-  byId('login-form').addEventListener('submit', async (event) => {
+  byId('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = byId('login-submit');
     setBusy(button, true, 'Anmelden...');
-    setStatus('login-status');
+    setStatus('auth-status');
 
     try {
-      await signIn(byId('login-email').value.trim(), byId('login-password').value);
+      await signIn(byId('auth-email').value.trim(), byId('auth-password').value);
       await routeAfterLogin();
     } catch (error) {
-      setStatus('login-status', error.message || 'Anmeldung fehlgeschlagen.', true);
+      setStatus('auth-status', error.message || 'Anmeldung fehlgeschlagen.', true);
     } finally {
-      setBusy(button, false);
+      setBusy(button, false, 'Anmelden');
     }
   });
 
@@ -1163,14 +1120,6 @@ function wireEvents() {
 
 wireEvents();
 
-// ?mode=signup → start in register mode
-if (new URLSearchParams(window.location.search).get('mode') === 'signup') {
-  byId('register-form').style.display = 'flex';
-  byId('login-form').style.display = 'none';
-  byId('show-register').textContent = 'Bereits registriert? Anmelden';
-  byId('login-title').textContent = 'Konto erstellen';
-  byId('login-copy').textContent = 'Erstelle ein kostenloses Konto, um deine clar Apps zu nutzen.';
-}
 
 initialRoute();
 </script>
