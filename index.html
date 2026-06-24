@@ -97,6 +97,14 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:1rem;}
 .close{border:0;background:transparent;color:var(--green);font-size:1.4rem;line-height:1;}
 .hidden{display:none!important;}
+.consent-options{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;}
+.consent-option{display:flex;flex-direction:column;gap:.2rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:.75rem;text-align:left;cursor:pointer;}
+.consent-option.selected{border-color:var(--green);box-shadow:0 0 0 .14rem rgba(46,92,62,.12);}
+.consent-option-title{font-weight:800;color:var(--text);font-size:.95rem;}
+.consent-option-desc{color:var(--muted);font-size:.8rem;line-height:1.35;}
+.consent-note{color:var(--muted);font-size:.72rem;line-height:1.4;margin:.6rem 0 .25rem;}
+#consent-submit{width:100%;min-height:2.85rem;border:0;border-radius:14px;background:var(--green);color:var(--paper);font-weight:800;margin-top:.5rem;}
+#consent-submit:disabled{background:var(--line);color:var(--muted);}
 .legal-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.25rem .45rem;padding:1.5rem 0 1rem;font-size:.75rem;}
 .legal-links a{color:var(--muted);text-decoration:none;}
 .legal-links a:hover{text-decoration:underline;}
@@ -209,6 +217,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <a href="https://www.iubenda.com/privacy-policy/44495718/cookie-policy" target="_blank" rel="noopener">Cookie-Richtlinie</a>
         <span>·</span>
         <a href="https://blog.lautini.ch/impressum" target="_blank" rel="noopener">Impressum</a>
+        <span>·</span>
+        <a href="#" id="open-consent-edit">E-Mail-Einstellungen</a>
       </nav>
     </div>
   </section>
@@ -294,6 +304,35 @@ button:disabled{cursor:not-allowed;opacity:.58;}
     </div>
   </section>
 </main>
+
+<div id="consent-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="consent-title">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h2 id="consent-title" class="title">E-Mails von clar</h2>
+        <p class="copy">Möchtest du E-Mails von clar by Lautini erhalten? Du kannst diese Wahl jederzeit ändern.</p>
+      </div>
+      <button id="close-consent" class="close" type="button" aria-label="Schliessen" style="display:none">x</button>
+    </div>
+    <div class="consent-options" role="radiogroup" aria-label="E-Mail-Einwilligung">
+      <button class="consent-option" type="button" data-consent="always" role="radio" aria-checked="false">
+        <span class="consent-option-title">Ja, dauerhaft</span>
+        <span class="consent-option-desc">Ich möchte E-Mails von clar by Lautini erhalten — auch nach einer Aboperiode.</span>
+      </button>
+      <button class="consent-option" type="button" data-consent="subscription_only" role="radio" aria-checked="false">
+        <span class="consent-option-title">Ja, nur während Abo</span>
+        <span class="consent-option-desc">Ja, aber nur während ich ein clar-Angebot abonniert habe. Danach soll meine Adresse gelöscht werden.</span>
+      </button>
+      <button class="consent-option" type="button" data-consent="never" role="radio" aria-checked="false">
+        <span class="consent-option-title">Nein</span>
+        <span class="consent-option-desc">Ich möchte keine Marketing-E-Mails erhalten.</span>
+      </button>
+    </div>
+    <p class="consent-note">Transaktionsmails (Login, Rechnung, Account-Sicherheit) sind davon nicht betroffen — diese erhältst du immer.</p>
+    <button id="consent-submit" class="primary" type="button" disabled>Speichern</button>
+    <p id="consent-status" class="status" role="status"></p>
+  </div>
+</div>
 
 <div id="reviewer-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="reviewer-title">
   <div class="modal">
@@ -738,9 +777,85 @@ async function startCheckout() {
   }
 }
 
+async function getEmailConsent(userId) {
+  if (!userId) return null;
+  const { data, error } = await supabase
+    .schema('public')
+    .from('email_consent')
+    .select('user_id, consent_level, consented_at, consent_version, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (error) {
+    console.warn('[email-consent] read failed', error);
+    return null;
+  }
+  return data ?? null;
+}
+
+async function setEmailConsent(userId, level) {
+  if (!userId) return { ok: false, error: 'no user' };
+  const now = new Date().toISOString();
+  const { error } = await supabase
+    .schema('public')
+    .from('email_consent')
+    .upsert(
+      { user_id: userId, consent_level: level, consented_at: now, updated_at: now },
+      { onConflict: 'user_id' },
+    );
+  if (error) return { ok: false, error: error.message };
+  try {
+    await supabase.schema('public').from('audit_log').insert({
+      user_id: userId,
+      action: 'email_consent_set',
+      details: { consent_level: level, source: 'home.lautini.ch' },
+    });
+  } catch (e) {
+    console.warn('[email-consent] audit_log insert failed', e);
+  }
+  return { ok: true };
+}
+
+let _consentSelected = null;
+let _consentResolve = null;
+
+function openConsentModal({ allowClose = false } = {}) {
+  _consentSelected = null;
+  document.querySelectorAll('.consent-option').forEach((b) => {
+    b.classList.remove('selected');
+    b.setAttribute('aria-checked', 'false');
+  });
+  const submit = byId('consent-submit');
+  if (submit) submit.disabled = true;
+  setStatus('consent-status');
+  const closeBtn = byId('close-consent');
+  if (closeBtn) closeBtn.style.display = allowClose ? '' : 'none';
+  byId('consent-modal').classList.add('active');
+  return new Promise((resolve) => {
+    _consentResolve = resolve;
+  });
+}
+
+function closeConsentModal(value) {
+  byId('consent-modal').classList.remove('active');
+  if (_consentResolve) {
+    const r = _consentResolve;
+    _consentResolve = null;
+    r(value ?? null);
+  }
+}
+
+async function ensureEmailConsent() {
+  const userId = state.session?.user?.id;
+  if (!userId) return;
+  const row = await getEmailConsent(userId);
+  if (row?.consent_level) return;
+  await openConsentModal({ allowClose: false });
+}
+
 async function initialRoute() {
   await delay(SPLASH_MS);
   await loadAccess();
+  if (state.session) await ensureEmailConsent();
   renderTiles();
   showScreen('tiles');
   const _btn = byId('open-login');
@@ -754,6 +869,7 @@ async function routeAfterLogin() {
   }
 
   await loadAccess();
+  await ensureEmailConsent();
   renderTiles();
   showScreen('tiles');
   const _btn = byId('open-login');
@@ -1090,6 +1206,44 @@ function wireEvents() {
   byId('close-reviewer').addEventListener('click', closeReviewerModal);
   byId('reviewer-modal').addEventListener('click', (event) => {
     if (event.target.id === 'reviewer-modal') closeReviewerModal();
+  });
+
+  document.querySelectorAll('.consent-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      _consentSelected = btn.dataset.consent;
+      document.querySelectorAll('.consent-option').forEach((b) => {
+        const on = b === btn;
+        b.classList.toggle('selected', on);
+        b.setAttribute('aria-checked', String(on));
+      });
+      byId('consent-submit').disabled = false;
+    });
+  });
+  byId('consent-submit').addEventListener('click', async () => {
+    if (!_consentSelected) return;
+    const userId = state.session?.user?.id;
+    if (!userId) { closeConsentModal(null); return; }
+    const submit = byId('consent-submit');
+    submit.disabled = true;
+    setStatus('consent-status', 'Wird gespeichert…');
+    const res = await setEmailConsent(userId, _consentSelected);
+    if (!res.ok) {
+      setStatus('consent-status', res.error || 'Speichern fehlgeschlagen.', true);
+      submit.disabled = false;
+      return;
+    }
+    closeConsentModal(_consentSelected);
+  });
+  byId('close-consent').addEventListener('click', () => closeConsentModal(null));
+  byId('consent-modal').addEventListener('click', (event) => {
+    if (event.target.id === 'consent-modal' && byId('close-consent').style.display !== 'none') {
+      closeConsentModal(null);
+    }
+  });
+  byId('open-consent-edit').addEventListener('click', async (event) => {
+    event.preventDefault();
+    if (!state.session?.user?.id) return;
+    await openConsentModal({ allowClose: true });
   });
 
   byId('open-paywall').addEventListener('click', openPaywall);
