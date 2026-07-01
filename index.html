@@ -1063,8 +1063,8 @@ function appendTileSection(container, label) {
 }
 
 function createTile(app) {
-  const isComingSoon = app.key === 'clarlog';
-  const hasAccess = !isComingSoon && hasAppAccess(app);
+  const hasAccess = hasAppAccess(app);
+  const isComingSoon = app.key === 'clarlog' && !hasAccess;
   const isLocked = !hasAccess;
   const tile = document.createElement('div');
   tile.className = `tile${isLocked ? ' locked' : ''}`;
