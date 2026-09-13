@@ -280,10 +280,10 @@ button:disabled{cursor:not-allowed;opacity:.58;}
               <span class="app-choice-desc">Haushaltsorganisation</span>
             </span>
           </label>
-          <label class="app-choice app-coming-soon" data-app-choice="log">
-            <input type="checkbox" value="log" data-app-checkbox disabled>
+          <label class="app-choice" data-app-choice="log">
+            <input type="checkbox" value="log" data-app-checkbox>
             <span class="app-choice-text">
-              <span class="app-choice-title">clar·log <span class="coming-soon-badge">bald verfügbar</span></span>
+              <span class="app-choice-title">clar·log</span>
               <span class="app-choice-desc">Stimulanzien-Tagebuch</span>
             </span>
           </label>
@@ -405,7 +405,7 @@ const apps = [
     key: 'clarlog',
     aliases: ['clarlog', 'clar·log', 'clar.log', 'clar-log', 'log'],
     name: 'clar·log',
-    description: 'Stimulanzien-Tagebuch beta',
+    description: 'Stimulanzien-Tagebuch',
     icon: '📖',
     color: '#5B7AAE',
     url: 'https://clar.log.lautini.ch/heute'
@@ -466,7 +466,7 @@ const planPrices = {
 const appOptions = [
   { key: 'markt', available: true },
   { key: 'heim', available: true },
-  { key: 'log', available: false },
+  { key: 'log', available: true },
   { key: 'tag', available: true }
 ];
 
@@ -1060,7 +1060,7 @@ function appendTileSection(container, label) {
 
 function createTile(app) {
   const hasAccess = hasAppAccess(app);
-  const isComingSoon = app.key === 'clarlog' && !hasAccess;
+  const isComingSoon = false;
   const isLocked = !hasAccess;
   const tile = document.createElement('div');
   tile.className = `tile${isLocked ? ' locked' : ''}`;
