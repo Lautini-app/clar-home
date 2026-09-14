@@ -109,6 +109,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .legal-links a{color:var(--muted);text-decoration:none;}
 .legal-links a:hover{text-decoration:underline;}
 .legal-links span{color:var(--line);}
+.auth-actions{display:flex;flex-direction:column;gap:.55rem;}
+.auth-switch{appearance:none;border:0;background:transparent;color:var(--green);font-size:.9rem;font-weight:650;text-decoration:underline;min-height:2.4rem;}
 </style>
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#2E5C3E">
@@ -129,8 +131,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
       <div class="card">
         <div class="stack">
           <div>
-            <h1 id="login-title" class="title">Willkommen zu clar</h1>
-            <p id="login-copy" class="copy">Email und Passwort eingeben.</p>
+            <h1 id="login-title" class="title">Konto erstellen</h1>
+            <p id="login-copy" class="copy">Neu bei clar? Zuerst ein Konto anlegen. Danach kannst du ein Abo wählen.</p>
           </div>
 
           <form id="auth-form" class="form">
@@ -141,7 +143,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
             <label class="field">
               <span class="label">Passwort</span>
               <span class="input-row">
-                <input id="auth-password" class="input password-input" type="password" autocomplete="current-password" required>
+                <input id="auth-password" class="input password-input" type="password" autocomplete="new-password" required>
                 <button class="eye-button" type="button" data-toggle-password="auth-password" aria-label="Passwort anzeigen">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -150,10 +152,10 @@ button:disabled{cursor:not-allowed;opacity:.58;}
                 </button>
               </span>
             </label>
-            <label id="confirm-field" class="field" style="display:none;">
+            <label id="confirm-field" class="field">
               <span class="label">Passwort wiederholen</span>
               <span class="input-row">
-                <input id="auth-password-confirm" class="input password-input" type="password" autocomplete="new-password">
+                <input id="auth-password-confirm" class="input password-input" type="password" autocomplete="new-password" required>
                 <button class="eye-button" type="button" data-toggle-password="auth-password-confirm" aria-label="Passwort anzeigen">
                   <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
@@ -162,9 +164,9 @@ button:disabled{cursor:not-allowed;opacity:.58;}
                 </button>
               </span>
             </label>
-            <div style="display:flex;gap:.6rem;">
-              <button id="register-submit" class="primary" type="button" style="flex:1;background:var(--green);color:var(--paper);">Konto erstellen</button>
-              <button id="login-submit" class="primary" type="submit" style="flex:1;background:transparent;color:var(--green);border:2px solid var(--green);">Anmelden</button>
+            <div class="auth-actions">
+              <button id="auth-submit" class="primary" type="submit">Konto erstellen</button>
+              <button id="auth-mode-switch" class="auth-switch" type="button">Ich habe schon ein Konto — anmelden</button>
             </div>
           </form>
 
@@ -485,6 +487,7 @@ const state = {
   groupApps: new Set(),
   entitlementLoadError: false,
   activeGroupIds: [],
+  authMode: 'register',
   paywall: {
     billing: 'yearly',
     plan: 'two',
@@ -542,7 +545,7 @@ function updateLoginButton() {
     btn.textContent = 'Abmelden';
     btn.style.display = '';
   } else {
-    btn.textContent = 'Anmelden';
+    btn.textContent = 'Konto erstellen';
     btn.style.display = '';
   }
 }
@@ -725,8 +728,8 @@ function getCheckoutPriceId() {
 
 async function startCheckout() {
   if (!state.session?.user?.id) {
-    setStatus('paywall-status', 'Bitte melde dich an, um fortzufahren.', true);
-    showScreen('login');
+    setStatus('paywall-status', 'Bitte zuerst ein Konto anlegen, um fortzufahren.', true);
+    openAuthScreen('register');
     return;
   }
 
@@ -857,12 +860,12 @@ async function initialRoute() {
   renderTiles();
   showScreen('tiles');
   const _btn = byId('open-login');
-  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
+  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Konto erstellen'; }
 }
 
 async function routeAfterLogin() {
   if (!state.session) {
-    showScreen('login');
+    openAuthScreen(state.authMode);
     return;
   }
 
@@ -871,7 +874,7 @@ async function routeAfterLogin() {
   renderTiles();
   showScreen('tiles');
   const _btn = byId('open-login');
-  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Anmelden'; }
+  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Konto erstellen'; }
 }
 
 async function restoreStoredSession() {
@@ -907,6 +910,105 @@ async function signIn(email, password) {
   storeSession(data.session);
   updateLoginButton();
   return data.session;
+}
+
+function authErrorText(error, mode = state.authMode) {
+  const raw = String(error?.message || error || '');
+  const lower = raw.toLowerCase();
+  if (lower.includes('invalid login credentials')) {
+    return mode === 'login'
+      ? 'Email oder Passwort stimmen nicht. Neu hier? Dann zuerst ein Konto erstellen.'
+      : 'Anmeldung nach dem Anlegen hat nicht geklappt. Wenn du die Email schon mal benutzt hast, wechsle zu «anmelden».';
+  }
+  if (lower.includes('already registered') || lower.includes('user already')) {
+    return 'Diese Email hat schon ein Konto. Melde dich an.';
+  }
+  if (lower.includes('email not confirmed')) {
+    return 'Die Email ist noch nicht bestätigt. Schau im Posteingang nach dem Link.';
+  }
+  if (lower.includes('password should be at least') || lower.includes('password should contain at least')) {
+    return 'Das Passwort muss mindestens 6 Zeichen haben.';
+  }
+  if (lower.includes('unable to validate email') || lower.includes('invalid email')) {
+    return 'Diese Email-Adresse ist ungültig.';
+  }
+  return raw || 'Etwas ist schiefgelaufen.';
+}
+
+function setAuthMode(mode) {
+  state.authMode = mode === 'login' ? 'login' : 'register';
+  const isRegister = state.authMode === 'register';
+  const title = byId('login-title');
+  const copy = byId('login-copy');
+  const confirmField = byId('confirm-field');
+  const confirmInput = byId('auth-password-confirm');
+  const passwordInput = byId('auth-password');
+  const submit = byId('auth-submit');
+  const switchBtn = byId('auth-mode-switch');
+
+  if (title) title.textContent = isRegister ? 'Konto erstellen' : 'Anmelden';
+  if (copy) {
+    copy.textContent = isRegister
+      ? 'Neu bei clar? Zuerst ein Konto anlegen. Danach kannst du ein Abo wählen.'
+      : 'Mit deinem clar-Konto anmelden.';
+  }
+  if (confirmField) confirmField.classList.toggle('hidden', !isRegister);
+  if (confirmInput) {
+    confirmInput.required = isRegister;
+    if (!isRegister) confirmInput.value = '';
+  }
+  if (passwordInput) passwordInput.autocomplete = isRegister ? 'new-password' : 'current-password';
+  if (submit) submit.textContent = isRegister ? 'Konto erstellen' : 'Anmelden';
+  if (switchBtn) {
+    switchBtn.textContent = isRegister
+      ? 'Ich habe schon ein Konto — anmelden'
+      : 'Neu hier? Konto erstellen';
+  }
+  setStatus('auth-status', '');
+}
+
+function openAuthScreen(mode) {
+  setAuthMode(mode);
+  showScreen('login');
+}
+
+async function registerAccount() {
+  const button = byId('auth-submit');
+  const email = byId('auth-email').value.trim();
+  const password = byId('auth-password').value;
+  const confirmInput = byId('auth-password-confirm');
+  setStatus('auth-status', '');
+  if (!email || !password) {
+    setStatus('auth-status', 'Bitte Email und Passwort eingeben.', true);
+    return;
+  }
+  if (password !== confirmInput.value) {
+    setStatus('auth-status', 'Passwörter stimmen nicht überein.', true);
+    confirmInput.focus();
+    return;
+  }
+
+  setBusy(button, true, 'Erstellen...');
+  try {
+    const { data: signUpData, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+    const identities = signUpData?.user?.identities;
+    if (Array.isArray(identities) && identities.length === 0) {
+      setAuthMode('login');
+      setStatus('auth-status', 'Diese Email hat schon ein Konto. Melde dich an.', true);
+      return;
+    }
+    const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+    if (loginError) throw loginError;
+    state.session = loginData.session;
+    await routeAfterLogin();
+  } catch (err) {
+    const text = authErrorText(err, 'register');
+    if (text.includes('schon ein Konto')) setAuthMode('login');
+    setStatus('auth-status', text, true);
+  } finally {
+    setBusy(button, false, state.authMode === 'register' ? 'Konto erstellen' : 'Anmelden');
+  }
 }
 
 function readStoredSession() {
@@ -1254,7 +1356,7 @@ function wireEvents() {
       renderTiles();
       updateLoginButton();
     } else {
-      showScreen('login');
+      openAuthScreen('register');
     }
   });
 
@@ -1274,46 +1376,18 @@ function wireEvents() {
 
   byId('checkout-submit').addEventListener('click', startCheckout);
 
-  byId('register-submit').addEventListener('click', async () => {
-    const button = byId('register-submit');
-    const confirmField = byId('confirm-field');
-    const confirmInput = byId('auth-password-confirm');
-    setStatus('auth-status', '');
-    const email = byId('auth-email').value.trim();
-    const password = byId('auth-password').value;
-    if (!email || !password) { setStatus('auth-status', 'Bitte Email und Passwort eingeben.', true); return; }
-
-    if (confirmField.style.display === 'none') {
-      confirmField.style.display = 'flex';
-      confirmInput.required = true;
-      confirmInput.focus();
-      return;
-    }
-
-    if (password !== confirmInput.value) {
-      setStatus('auth-status', 'Passwörter stimmen nicht überein.', true);
-      confirmInput.focus();
-      return;
-    }
-
-    setBusy(button, true, 'Erstellen...');
-    try {
-      const { error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-      if (loginError) throw loginError;
-      state.session = loginData.session;
-      await routeAfterLogin();
-    } catch (err) {
-      setStatus('auth-status', err.message || 'Registrierung fehlgeschlagen.', true);
-    } finally {
-      setBusy(button, false, 'Konto erstellen');
-    }
+  byId('auth-mode-switch').addEventListener('click', () => {
+    setAuthMode(state.authMode === 'register' ? 'login' : 'register');
   });
 
   byId('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
-    const button = byId('login-submit');
+    if (state.authMode === 'register') {
+      await registerAccount();
+      return;
+    }
+
+    const button = byId('auth-submit');
     setBusy(button, true, 'Anmelden...');
     setStatus('auth-status');
 
@@ -1321,7 +1395,7 @@ function wireEvents() {
       await signIn(byId('auth-email').value.trim(), byId('auth-password').value);
       await routeAfterLogin();
     } catch (error) {
-      setStatus('auth-status', error.message || 'Anmeldung fehlgeschlagen.', true);
+      setStatus('auth-status', authErrorText(error, 'login'), true);
     } finally {
       setBusy(button, false, 'Anmelden');
     }
@@ -1356,7 +1430,7 @@ function wireEvents() {
 }
 
 wireEvents();
-
+setAuthMode('register');
 
 initialRoute();
 </script>
