@@ -207,6 +207,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
       <div class="subscription-actions" aria-label="Abo Optionen">
         <button id="open-paywall" class="billing-button" type="button">Abo abschliessen</button>
         <a class="billing-button" href="https://billing.stripe.com/p/login/8x2aEZa530bgaV4eHj0Jq00" target="_blank" rel="noopener">Abo verwalten</a>
+        <button id="open-register" class="billing-button" type="button">Konto erstellen</button>
         <button id="open-login" class="billing-button" type="button">Anmelden</button>
       </div>
       <nav class="legal-links" aria-label="Rechtliches">
@@ -540,14 +541,23 @@ window.addEventListener('message', (e) => {
 });
 
 function updateLoginButton() {
-  const btn = byId('open-login');
+  const loginBtn = byId('open-login');
+  const registerBtn = byId('open-register');
+  if (!loginBtn) return;
   if (state.session) {
-    btn.textContent = 'Abmelden';
-    btn.style.display = '';
+    loginBtn.textContent = 'Abmelden';
+    if (registerBtn) registerBtn.classList.add('hidden');
   } else {
-    btn.textContent = 'Konto erstellen';
-    btn.style.display = '';
+    loginBtn.textContent = 'Anmelden';
+    if (registerBtn) registerBtn.classList.remove('hidden');
   }
+}
+
+function authIntentFromUrl() {
+  const text = `${window.location.hash} ${window.location.search}`.toLowerCase();
+  if (/(anmelden|login|signin|sign-in|einloggen)/.test(text)) return 'login';
+  if (/(konto|register|signup|sign-up)/.test(text)) return 'register';
+  return null;
 }
 const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
@@ -858,9 +868,13 @@ async function initialRoute() {
   await loadAccess();
   if (state.session) await ensureEmailConsent();
   renderTiles();
+  updateLoginButton();
+  const intent = authIntentFromUrl();
+  if (!state.session && intent) {
+    openAuthScreen(intent);
+    return;
+  }
   showScreen('tiles');
-  const _btn = byId('open-login');
-  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Konto erstellen'; }
 }
 
 async function routeAfterLogin() {
@@ -872,9 +886,8 @@ async function routeAfterLogin() {
   await loadAccess();
   await ensureEmailConsent();
   renderTiles();
+  updateLoginButton();
   showScreen('tiles');
-  const _btn = byId('open-login');
-  if (_btn) { _btn.textContent = state.session ? 'Abmelden' : 'Konto erstellen'; }
 }
 
 async function restoreStoredSession() {
@@ -1347,6 +1360,7 @@ function wireEvents() {
   });
 
   byId('open-paywall').addEventListener('click', openPaywall);
+  byId('open-register').addEventListener('click', () => openAuthScreen('register'));
   byId('open-login').addEventListener('click', async () => {
     if (state.session) {
       await supabase.auth.signOut();
@@ -1355,9 +1369,15 @@ function wireEvents() {
       await loadAccess();
       renderTiles();
       updateLoginButton();
+      showScreen('tiles');
     } else {
-      openAuthScreen('register');
+      openAuthScreen('login');
     }
+  });
+  window.addEventListener('hashchange', () => {
+    if (state.session) return;
+    const intent = authIntentFromUrl();
+    if (intent) openAuthScreen(intent);
   });
 
   byId('close-paywall').addEventListener('click', closePaywall);
