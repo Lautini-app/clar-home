@@ -136,12 +136,12 @@ button:disabled{cursor:not-allowed;opacity:.58;}
           </div>
 
           <form id="auth-form" class="form">
-            <label class="field">
+            <label id="email-field" class="field">
               <span class="label">Email</span>
               <input id="auth-email" class="input" type="email" autocomplete="email" required>
             </label>
             <label class="field">
-              <span class="label">Passwort</span>
+              <span id="password-label" class="label">Passwort</span>
               <span class="input-row">
                 <input id="auth-password" class="input password-input" type="password" autocomplete="new-password" required>
                 <button class="eye-button" type="button" data-toggle-password="auth-password" aria-label="Passwort anzeigen">
@@ -167,6 +167,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
             <div class="auth-actions">
               <button id="auth-submit" class="primary" type="submit">Konto erstellen</button>
               <button id="auth-mode-switch" class="auth-switch" type="button">Ich habe schon ein Konto — anmelden</button>
+              <button id="auth-forgot" class="auth-switch hidden" type="button">Passwort vergessen?</button>
             </div>
           </form>
 
@@ -376,6 +377,7 @@ const SESSION_STORAGE_KEY = 'clar.supabase.session';
 const SPLASH_MS = 1500;
 const CHECKOUT_SUCCESS_URL = 'https://home.lautini.ch';
 const CHECKOUT_CANCEL_URL = 'https://home.lautini.ch';
+const PASSWORD_RESET_REDIRECT = 'https://home.lautini.ch/?recovery=1';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
@@ -559,6 +561,53 @@ function authIntentFromUrl() {
   if (/(konto|register|signup|sign-up)/.test(text)) return 'register';
   return null;
 }
+
+function cleanAuthUrl() {
+  window.history.replaceState({}, document.title, window.location.pathname);
+}
+
+function authCallbackParams() {
+  const search = new URLSearchParams(window.location.search);
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+  return {
+    search,
+    hash,
+    recovery: search.get('recovery') === '1' || search.get('type') === 'recovery' || hash.get('type') === 'recovery'
+  };
+}
+
+async function consumeAuthCallback() {
+  const { search, hash, recovery } = authCallbackParams();
+  const errorDescription = search.get('error_description') || hash.get('error_description');
+  if (errorDescription) throw new Error(errorDescription);
+
+  let session = null;
+  const code = search.get('code');
+  if (code) {
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) throw error;
+    session = data.session;
+  } else {
+    const accessToken = hash.get('access_token');
+    const refreshToken = hash.get('refresh_token');
+    if (accessToken && refreshToken) {
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+      if (error) throw error;
+      session = data.session;
+    }
+  }
+
+  if (session) {
+    state.session = session;
+    storeSession(session);
+  }
+
+  return { handled: Boolean(session), recovery };
+}
+
 const delay = (ms) => new Promise((resolve) => window.setTimeout(resolve, ms));
 
 function showScreen(name) {
@@ -579,8 +628,9 @@ function setBusy(button, busy, busyText) {
     button.textContent = busyText;
     button.disabled = true;
   } else {
-    button.textContent = button.dataset.label || button.textContent;
+    button.textContent = busyText || button.dataset.label || button.textContent;
     button.disabled = false;
+    delete button.dataset.label;
   }
 }
 
@@ -864,9 +914,33 @@ async function ensureEmailConsent() {
 }
 
 async function initialRoute() {
+  let callback = { handled: false, recovery: false };
+
+  try {
+    callback = await consumeAuthCallback();
+    if (!state.session) await restoreStoredSession();
+  } catch (_error) {
+    await delay(SPLASH_MS);
+    cleanAuthUrl();
+    openAuthScreen('login');
+    setStatus('auth-status', 'Der Anmelde- oder Passwort-Link ist ungültig oder abgelaufen. Bitte fordere bei Bedarf einen neuen Link an.', true);
+    return;
+  }
+
   await delay(SPLASH_MS);
-  await loadAccess();
-  if (state.session) await ensureEmailConsent();
+
+  if (callback.recovery && callback.handled && state.session) {
+    openAuthScreen('reset');
+    return;
+  }
+
+  if (state.session) {
+    await loadAccess();
+    await ensureEmailConsent();
+  } else {
+    await loadAccess();
+  }
+
   renderTiles();
   updateLoginButton();
   const intent = authIntentFromUrl();
@@ -930,7 +1004,7 @@ function authErrorText(error, mode = state.authMode) {
   const lower = raw.toLowerCase();
   if (lower.includes('invalid login credentials')) {
     return mode === 'login'
-      ? 'Email oder Passwort stimmen nicht. Neu hier? Dann zuerst ein Konto erstellen.'
+      ? 'Email oder Passwort stimmen nicht. Du kannst dein Passwort unten zurücksetzen.'
       : 'Anmeldung nach dem Anlegen hat nicht geklappt. Wenn du die Email schon mal benutzt hast, wechsle zu «anmelden».';
   }
   if (lower.includes('already registered') || lower.includes('user already')) {
@@ -945,38 +1019,54 @@ function authErrorText(error, mode = state.authMode) {
   if (lower.includes('unable to validate email') || lower.includes('invalid email')) {
     return 'Diese Email-Adresse ist ungültig.';
   }
+  if (lower.includes('expired') || lower.includes('invalid token') || lower.includes('otp')) {
+    return 'Der Link ist ungültig oder abgelaufen. Bitte fordere einen neuen Passwort-Link an.';
+  }
   return raw || 'Etwas ist schiefgelaufen.';
 }
 
 function setAuthMode(mode) {
-  state.authMode = mode === 'login' ? 'login' : 'register';
+  state.authMode = ['login', 'register', 'reset'].includes(mode) ? mode : 'register';
   const isRegister = state.authMode === 'register';
+  const isLogin = state.authMode === 'login';
+  const isReset = state.authMode === 'reset';
   const title = byId('login-title');
   const copy = byId('login-copy');
+  const emailField = byId('email-field');
+  const emailInput = byId('auth-email');
   const confirmField = byId('confirm-field');
   const confirmInput = byId('auth-password-confirm');
   const passwordInput = byId('auth-password');
+  const passwordLabel = byId('password-label');
   const submit = byId('auth-submit');
   const switchBtn = byId('auth-mode-switch');
+  const forgotBtn = byId('auth-forgot');
 
-  if (title) title.textContent = isRegister ? 'Konto erstellen' : 'Anmelden';
+  if (title) title.textContent = isReset ? 'Neues Passwort setzen' : isRegister ? 'Konto erstellen' : 'Anmelden';
   if (copy) {
-    copy.textContent = isRegister
-      ? 'Neu bei clar? Zuerst ein Konto anlegen. Danach kannst du ein Abo wählen.'
-      : 'Mit deinem clar-Konto anmelden.';
+    copy.textContent = isReset
+      ? 'Wähle jetzt ein neues Passwort für dein clar-Konto.'
+      : isRegister
+        ? 'Neu bei clar? Zuerst ein Konto anlegen. Danach kannst du ein Abo wählen.'
+        : 'Mit deinem clar-Konto anmelden.';
   }
-  if (confirmField) confirmField.classList.toggle('hidden', !isRegister);
+  if (emailField) emailField.classList.toggle('hidden', isReset);
+  if (emailInput) emailInput.required = !isReset;
+  if (confirmField) confirmField.classList.toggle('hidden', isLogin);
   if (confirmInput) {
-    confirmInput.required = isRegister;
-    if (!isRegister) confirmInput.value = '';
+    confirmInput.required = !isLogin;
+    if (isLogin) confirmInput.value = '';
   }
-  if (passwordInput) passwordInput.autocomplete = isRegister ? 'new-password' : 'current-password';
-  if (submit) submit.textContent = isRegister ? 'Konto erstellen' : 'Anmelden';
+  if (passwordLabel) passwordLabel.textContent = isReset ? 'Neues Passwort' : 'Passwort';
+  if (passwordInput) passwordInput.autocomplete = isLogin ? 'current-password' : 'new-password';
+  if (submit) submit.textContent = isReset ? 'Passwort speichern' : isRegister ? 'Konto erstellen' : 'Anmelden';
   if (switchBtn) {
+    switchBtn.classList.toggle('hidden', isReset);
     switchBtn.textContent = isRegister
       ? 'Ich habe schon ein Konto — anmelden'
       : 'Neu hier? Konto erstellen';
   }
+  if (forgotBtn) forgotBtn.classList.toggle('hidden', !isLogin);
   setStatus('auth-status', '');
 }
 
@@ -1014,6 +1104,7 @@ async function registerAccount() {
     const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
     if (loginError) throw loginError;
     state.session = loginData.session;
+    storeSession(loginData.session);
     await routeAfterLogin();
   } catch (err) {
     const text = authErrorText(err, 'register');
@@ -1021,6 +1112,76 @@ async function registerAccount() {
     setStatus('auth-status', text, true);
   } finally {
     setBusy(button, false, state.authMode === 'register' ? 'Konto erstellen' : 'Anmelden');
+  }
+}
+
+async function requestPasswordReset() {
+  const email = byId('auth-email').value.trim();
+  const button = byId('auth-forgot');
+
+  if (!email) {
+    setStatus('auth-status', 'Gib zuerst deine Email-Adresse ein.', true);
+    byId('auth-email').focus();
+    return;
+  }
+
+  setBusy(button, true, 'Link wird gesendet...');
+  setStatus('auth-status');
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: PASSWORD_RESET_REDIRECT
+    });
+    if (error) throw error;
+    setStatus('auth-status', 'Wenn zu dieser Email ein clar-Konto existiert, erhältst du jetzt einen Link zum Zurücksetzen.');
+  } catch (error) {
+    setStatus('auth-status', authErrorText(error, 'login'), true);
+  } finally {
+    setBusy(button, false, 'Passwort vergessen?');
+  }
+}
+
+async function saveNewPassword() {
+  const button = byId('auth-submit');
+  const password = byId('auth-password').value;
+  const confirmPassword = byId('auth-password-confirm').value;
+
+  if (!state.session) {
+    setStatus('auth-status', 'Die Passwort-Sitzung ist abgelaufen. Bitte fordere einen neuen Link an.', true);
+    return;
+  }
+  if (!password || password.length < 6) {
+    setStatus('auth-status', 'Das Passwort muss mindestens 6 Zeichen haben.', true);
+    return;
+  }
+  if (password !== confirmPassword) {
+    setStatus('auth-status', 'Passwörter stimmen nicht überein.', true);
+    byId('auth-password-confirm').focus();
+    return;
+  }
+
+  const email = state.session.user?.email || '';
+  setBusy(button, true, 'Wird gespeichert...');
+
+  try {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) throw error;
+
+    await supabase.auth.signOut();
+    state.session = null;
+    clearStoredSession();
+    await loadAccess();
+    cleanAuthUrl();
+    byId('auth-password').value = '';
+    byId('auth-password-confirm').value = '';
+    if (email) byId('auth-email').value = email;
+    setAuthMode('login');
+    showScreen('login');
+    setStatus('auth-status', 'Passwort aktualisiert. Du kannst dich jetzt mit dem neuen Passwort anmelden.');
+  } catch (error) {
+    setStatus('auth-status', authErrorText(error, 'reset'), true);
+  } finally {
+    setBusy(button, false, state.authMode === 'login' ? 'Anmelden' : 'Passwort speichern');
   }
 }
 
@@ -1055,6 +1216,8 @@ async function loadAccess() {
   state.groupApps = new Set();
   state.activeGroupIds = [];
   state.entitlementLoadError = false;
+
+  if (!state.session?.user?.id) return;
 
   try {
     const userId = state.session.user.id;
@@ -1399,11 +1562,16 @@ function wireEvents() {
   byId('auth-mode-switch').addEventListener('click', () => {
     setAuthMode(state.authMode === 'register' ? 'login' : 'register');
   });
+  byId('auth-forgot').addEventListener('click', requestPasswordReset);
 
   byId('auth-form').addEventListener('submit', async (event) => {
     event.preventDefault();
     if (state.authMode === 'register') {
       await registerAccount();
+      return;
+    }
+    if (state.authMode === 'reset') {
+      await saveNewPassword();
       return;
     }
 
@@ -1439,12 +1607,15 @@ function wireEvents() {
     }
   });
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange((event, session) => {
     state.session = session;
     if (session) {
       storeSession(session);
     } else {
       clearStoredSession();
+    }
+    if (event === 'PASSWORD_RECOVERY' && session) {
+      window.setTimeout(() => openAuthScreen('reset'), 0);
     }
   });
 }
