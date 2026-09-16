@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F5F3EE">
+<title>clar · Testzugänge</title>
+<style>
+:root{--paper:#F5F3EE;--green:#2E5C3E;--text:#1C2E1C;--muted:#667566;--line:#DAD6CC;--soft:#EBE6DC;--danger:#8B3A2B;--white:#fff}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--paper);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}body{padding:32px 18px}.shell{max-width:760px;margin:0 auto}.brand{font-size:2.2rem;font-weight:800;letter-spacing:-.06em;color:var(--green);margin:0 0 6px}.muted{color:var(--muted)}h1{font-size:1.75rem;letter-spacing:-.03em;margin:0 0 8px}.card{background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 12px 34px rgba(46,92,62,.08);margin-top:18px}.form{display:grid;grid-template-columns:1fr auto;gap:10px}.input,.button{min-height:50px;border-radius:14px;font:inherit}.input{width:100%;border:1px solid var(--line);background:var(--white);padding:0 14px;outline:none}.input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(46,92,62,.12)}.button{border:0;background:var(--green);color:white;font-weight:750;padding:0 18px;cursor:pointer}.button:disabled{opacity:.55;cursor:not-allowed}.status{min-height:22px;margin:12px 0 0;font-size:.92rem;color:var(--muted)}.status.error{color:var(--danger)}.stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.pill{border-radius:999px;background:var(--soft);padding:7px 11px;font-size:.82rem;font-weight:700}.table-wrap{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--line);white-space:nowrap}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}.badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:.75rem;font-weight:750}.active{background:#E6F3EA;color:#2E5C3E}.expired{background:#EEEAE2;color:#6B6B62}.revoked{background:#F7E9E5;color:#8B3A2B}.hidden{display:none!important}.topline{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.link{color:var(--green);font-weight:700;text-decoration:none}.small{font-size:.82rem}.warning{background:#FFF7DE;border:1px solid #E8D9A4;border-radius:14px;padding:12px 14px;margin-top:14px;color:#67551F;font-size:.88rem;line-height:1.45}@media(max-width:620px){.form{grid-template-columns:1fr}.button{width:100%}.topline{display:block}.topline .link{display:inline-block;margin-top:8px}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="topline">
+    <div>
+      <div class="brand">clar·</div>
+      <h1>14-Tage-Testzugänge</h1>
+      <p class="muted" style="margin:0">E-Mail eingeben → Konto anlegen/einladen → alle vier Apps 14 Tage freischalten.</p>
+    </div>
+    <a class="link small" href="/">Zurück zu clar</a>
+  </div>
+
+  <section id="auth-card" class="card hidden">
+    <strong>Nicht angemeldet.</strong>
+    <p class="muted">Melde dich zuerst mit deinem clar-Konto an und öffne diese Seite danach erneut.</p>
+    <a class="link" href="/#anmelden">Bei clar anmelden →</a>
+  </section>
+
+  <section id="admin-card" class="card hidden">
+    <form id="trial-form" class="form">
+      <input id="trial-email" class="input" type="email" autocomplete="email" placeholder="tester@example.ch" required aria-label="E-Mail-Adresse">
+      <button id="trial-submit" class="button" type="submit">14 Tage freischalten</button>
+    </form>
+    <p id="trial-status" class="status" role="status"></p>
+    <div class="stats">
+      <span class="pill"><span id="used-count">–</span> / <span id="limit-count">20</span> Plätze vergeben</span>
+      <span class="pill"><span id="remaining-count">–</span> Plätze frei</span>
+    </div>
+    <div class="warning">Die Freischaltung ist serverseitig geschützt. Ein neuer Benutzer erhält eine Einladung zum Festlegen seines Passworts. Bestehende Konten werden nur freigeschaltet.</div>
+  </section>
+
+  <section id="list-card" class="card hidden">
+    <strong>Testzugänge</strong>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>E-Mail</th><th>Start</th><th>Ende</th><th>Status</th></tr></thead>
+        <tbody id="trial-list"><tr><td colspan="4" class="muted">Noch keine Daten.</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+const SUPABASE_URL = 'https://cgwpzpnklxphqxlixtva.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnd3B6cG5rbHhwaHF4bGl4dHZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODcyNTcsImV4cCI6MjA5NDY2MzI1N30.t-VnUALdHsoNo9mJ6LV-lW4OntJLqHnF36SHb0rNP0c';
+const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/create-trial`;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+
+const byId = (id) => document.getElementById(id);
+const authCard = byId('auth-card');
+const adminCard = byId('admin-card');
+const listCard = byId('list-card');
+const form = byId('trial-form');
+const submit = byId('trial-submit');
+const status = byId('trial-status');
+let session = null;
+
+function setStatus(message = '', error = false) {
+  status.textContent = message;
+  status.classList.toggle('error', error);
+}
+
+function fmt(value) {
+  if (!value) return '–';
+  return new Intl.DateTimeFormat('de-CH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(value));
+}
+
+function badge(statusValue) {
+  const value = statusValue || 'active';
+  const label = value === 'active' ? 'aktiv' : value === 'expired' ? 'abgelaufen' : 'widerrufen';
+  return `<span class="badge ${value}">${label}</span>`;
+}
+
+async function callTrial(body) {
+  const token = session?.access_token;
+  if (!token) throw new Error('Keine aktive Sitzung.');
+  const response = await fetch(FUNCTION_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': SUPABASE_ANON_KEY },
+    body: JSON.stringify(body)
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload?.error || `Fehler ${response.status}`);
+  return payload;
+}
+
+function renderList(items = [], limit = 20, used = 0) {
+  byId('limit-count').textContent = String(limit);
+  byId('used-count').textContent = String(used);
+  byId('remaining-count').textContent = String(Math.max(0, limit - used));
+  byId('trial-list').innerHTML = items.length
+    ? items.map((item) => `<tr><td>${escapeHtml(item.email || '')}</td><td>${fmt(item.starts_at)}</td><td>${fmt(item.ends_at)}</td><td>${badge(item.status)}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="muted">Noch keine Testzugänge.</td></tr>';
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+}
+
+async function refresh() {
+  const data = await callTrial({ action: 'list' });
+  renderList(data.items || [], data.limit || 20, data.used || 0);
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const email = byId('trial-email').value.trim().toLowerCase();
+  if (!email) return;
+  submit.disabled = true;
+  submit.textContent = 'Wird angelegt…';
+  setStatus();
+  try {
+    const data = await callTrial({ action: 'create', email });
+    const inviteText = data.invited ? ' Einladung wurde versendet.' : ' Bestehendes Konto wurde freigeschaltet.';
+    setStatus(`Testzugang aktiv bis ${fmt(data.ends_at)}.${inviteText}`);
+    byId('trial-email').value = '';
+    await refresh();
+  } catch (error) {
+    setStatus(error.message || String(error), true);
+  } finally {
+    submit.disabled = false;
+    submit.textContent = '14 Tage freischalten';
+  }
+});
+
+async function init() {
+  const { data } = await supabase.auth.getSession();
+  session = data.session;
+  if (!session) {
+    try {
+      const raw = localStorage.getItem('clar.supabase.session');
+      const stored = raw ? JSON.parse(raw) : null;
+      if (stored?.access_token && stored?.refresh_token) {
+        const result = await supabase.auth.setSession({ access_token: stored.access_token, refresh_token: stored.refresh_token });
+        session = result.data.session;
+      }
+    } catch {}
+  }
+  if (!session) {
+    authCard.classList.remove('hidden');
+    return;
+  }
+  adminCard.classList.remove('hidden');
+  listCard.classList.remove('hidden');
+  try {
+    await refresh();
+  } catch (error) {
+    setStatus(error.message || String(error), true);
+  }
+}
+
+init();
+</script>
+</body>
+</html>
