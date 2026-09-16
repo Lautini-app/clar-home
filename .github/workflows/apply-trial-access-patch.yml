@@ -1,0 +1,70 @@
+name: Apply isolated trial access patch
+
+on:
+  push:
+    branches:
+      - feat/14-day-trial-admin
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/14-day-trial-admin
+          fetch-depth: 0
+
+      - name: Patch trial entitlement into home shell
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('index.html')
+          text = path.read_text()
+
+          replacements = [
+            (
+              "  subscriberApps: new Set(),\n  groupApps: new Set(),\n  entitlementLoadError: false,",
+              "  subscriberApps: new Set(),\n  groupApps: new Set(),\n  trialAllAccess: false,\n  entitlementLoadError: false,"
+            ),
+            (
+              "  state.subscriberApps = new Set();\n  state.groupApps = new Set();\n  state.activeGroupIds = [];\n  state.entitlementLoadError = false;",
+              "  state.subscriberApps = new Set();\n  state.groupApps = new Set();\n  state.trialAllAccess = false;\n  state.activeGroupIds = [];\n  state.entitlementLoadError = false;"
+            ),
+            (
+              "    if (state.activeGroupIds.length) {\n      await loadGroupApps(state.activeGroupIds);\n    }\n  } catch (_error) {",
+              "    if (state.activeGroupIds.length) {\n      await loadGroupApps(state.activeGroupIds);\n    }\n\n    // Trials are intentionally separate from Stripe subscriptions. If the\n    // migration has not been deployed yet, paid/group access keeps working.\n    const { data: trialRows, error: trialError } = await supabase\n      .from('trial_grants')\n      .select('ends_at,status')\n      .eq('user_id', userId)\n      .eq('status', 'active')\n      .gt('ends_at', new Date().toISOString())\n      .limit(1);\n\n    if (trialError) {\n      console.warn('[clar trial] entitlement read failed', trialError);\n    } else {\n      state.trialAllAccess = Boolean((trialRows || []).length);\n    }\n  } catch (_error) {"
+            ),
+            (
+              "function hasAppAccess(app) {\n  return state.subscriberApps.has('all')\n    || state.groupApps.has('all')\n    || state.subscriberApps.has(app.key)\n    || state.groupApps.has(app.key);\n}",
+              "function hasAppAccess(app) {\n  return state.trialAllAccess\n    || state.subscriberApps.has('all')\n    || state.groupApps.has('all')\n    || state.subscriberApps.has(app.key)\n    || state.groupApps.has(app.key);\n}"
+            ),
+          ]
+
+          for old, new in replacements:
+            count = text.count(old)
+            if count != 1:
+              raise SystemExit(f'Expected exactly one match, found {count}: {old[:80]!r}')
+            text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Verify patch markers
+        run: |
+          grep -q "trialAllAccess: false" index.html
+          grep -q "from('trial_grants')" index.html
+          grep -q "return state.trialAllAccess" index.html
+
+      - name: Commit patch and remove one-time workflow
+        run: |
+          rm .github/workflows/apply-trial-access-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/apply-trial-access-patch.yml
+          git commit -m "feat: honor active 14-day trials in app access"
+          git push origin HEAD:feat/14-day-trial-admin
