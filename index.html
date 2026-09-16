@@ -488,6 +488,7 @@ const state = {
   session: null,
   subscriberApps: new Set(),
   groupApps: new Set(),
+  trialAllAccess: false,
   entitlementLoadError: false,
   activeGroupIds: [],
   authMode: 'register',
@@ -1214,6 +1215,7 @@ function clearStoredSession() {
 async function loadAccess() {
   state.subscriberApps = new Set();
   state.groupApps = new Set();
+  state.trialAllAccess = false;
   state.activeGroupIds = [];
   state.entitlementLoadError = false;
 
@@ -1249,6 +1251,22 @@ async function loadAccess() {
 
     if (state.activeGroupIds.length) {
       await loadGroupApps(state.activeGroupIds);
+    }
+
+    // Trials are intentionally separate from Stripe subscriptions. If the
+    // migration has not been deployed yet, paid/group access keeps working.
+    const { data: trialRows, error: trialError } = await supabase
+      .from('trial_grants')
+      .select('ends_at,status')
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .gt('ends_at', new Date().toISOString())
+      .limit(1);
+
+    if (trialError) {
+      console.warn('[clar trial] entitlement read failed', trialError);
+    } else {
+      state.trialAllAccess = Boolean((trialRows || []).length);
     }
   } catch (_error) {
     state.entitlementLoadError = true;
@@ -1404,7 +1422,8 @@ function createActionText(text, className = '') {
 }
 
 function hasAppAccess(app) {
-  return state.subscriberApps.has('all')
+  return state.trialAllAccess
+    || state.subscriberApps.has('all')
     || state.groupApps.has('all')
     || state.subscriberApps.has(app.key)
     || state.groupApps.has(app.key);
