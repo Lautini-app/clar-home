@@ -1,8 +1,8 @@
 -- clar: zeitlich begrenzte Testzugänge
 -- Zugriff wird NICHT in paid subscriptions geschrieben. Dadurch kann ein Trial
 -- niemals ein bestehendes Stripe-Abo überschreiben oder beim Ablauf deaktivieren.
-
-CREATE EXTENSION IF NOT EXISTS pg_cron;
+-- Der Zugriff gilt nur, solange status = 'active' UND ends_at > now(). Damit
+-- endet er automatisch nach 14 Tagen, ohne Cronjob oder Hintergrundprozess.
 
 CREATE TABLE IF NOT EXISTS public.trial_grants (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -51,28 +51,3 @@ DROP TRIGGER IF EXISTS trial_grants_updated_at ON public.trial_grants;
 CREATE TRIGGER trial_grants_updated_at
 BEFORE UPDATE ON public.trial_grants
 FOR EACH ROW EXECUTE FUNCTION public.set_trial_grants_updated_at();
-
-CREATE OR REPLACE FUNCTION public.expire_clar_trials()
-RETURNS void
-LANGUAGE sql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  UPDATE public.trial_grants
-     SET status = 'expired', updated_at = now()
-   WHERE status = 'active'
-     AND ends_at <= now();
-$$;
-
-REVOKE ALL ON FUNCTION public.expire_clar_trials() FROM PUBLIC;
-
--- Status für die Adminliste aktualisieren. Der eigentliche Zugriff ist zusätzlich
--- immer an ends_at > now() gebunden und funktioniert daher auch ohne Cron exakt.
-SELECT cron.unschedule('expire-clar-trials')
-WHERE EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'expire-clar-trials');
-
-SELECT cron.schedule(
-  'expire-clar-trials',
-  '*/15 * * * *',
-  $$SELECT public.expire_clar_trials();$$
-);
