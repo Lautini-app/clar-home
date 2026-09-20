@@ -58,6 +58,17 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .tile-action{display:flex;align-items:center;gap:.55rem;color:var(--green);font-size:1.65rem;font-weight:650;line-height:1;white-space:nowrap;}
 .soon-badge{display:inline-flex;align-items:center;border-radius:999px;background:var(--soft);padding:.15rem .45rem;color:var(--muted);font-size:.66rem;font-weight:800;letter-spacing:.02em;}
 .subscription-actions{display:flex;width:100%;max-width:34rem;flex-wrap:wrap;align-items:center;justify-content:center;gap:.35rem 1rem;margin-top:.1rem;}
+/* Begrüssung für Besucher ohne Konto. Wird nur im ausgeloggten Zustand
+   eingeblendet (siehe renderVisitorIntro) — Eingeloggte sehen sie nie. */
+.visitor-intro{display:none;width:100%;max-width:34rem;flex-direction:column;align-items:stretch;gap:.9rem;border:1px solid var(--line);border-radius:1.35rem;background:rgba(255,255,255,.72);box-shadow:0 1rem 2.5rem rgba(46,92,62,.1);padding:1.4rem 1.3rem;text-align:center;}
+.visitor-intro.shown{display:flex;}
+.visitor-intro .aktion{display:inline-flex;align-items:center;gap:.45rem;align-self:center;border-radius:100px;background:var(--soft);color:var(--green);font-size:.8rem;font-weight:700;padding:.4rem .85rem;}
+.visitor-intro .aktion .punkt{width:.45rem;height:.45rem;border-radius:50%;background:var(--green);}
+.visitor-intro h2{font-size:1.15rem;font-weight:750;letter-spacing:-.02em;color:var(--text);}
+.visitor-intro p{color:var(--muted);font-size:.93rem;line-height:1.5;}
+.visitor-intro .primary{display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none;}
+.visitor-intro .zweitweg{font-size:.88rem;color:var(--muted);}
+.visitor-intro .zweitweg button{appearance:none;border:0;background:transparent;color:var(--green);font-weight:700;text-decoration:underline;font-size:.88rem;}
 .billing-button{appearance:none;border:0;background:transparent;color:var(--green);font-size:.82rem;font-weight:650;text-decoration:none;}
 .billing-button:hover,.billing-button:focus-visible,.billing-button:active{text-decoration:underline;}
 .topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:center;margin-bottom:1rem;}
@@ -203,6 +214,13 @@ button:disabled{cursor:not-allowed;opacity:.58;}
       </div>
       <div>
         <h1 id="tiles-title" class="title">Deine clar·Apps</h1>
+      </div>
+      <div id="visitor-intro" class="visitor-intro">
+        <span class="aktion"><span class="punkt" aria-hidden="true"></span>Bis 31. Oktober kostenlos</span>
+        <h2>Vier Werkzeuge für den Alltag mit ADHS</h2>
+        <p>Tagesstruktur, Haushalt, Einkauf und ein Beobachtungs-Tagebuch. Konto anlegen, E-Mail bestätigen, loslegen — kein Zahlungsmittel, kein Abo.</p>
+        <button id="visitor-register" class="primary" type="button">Konto erstellen</button>
+        <span class="zweitweg">Schon ein Konto? <button id="visitor-login" type="button">Anmelden</button></span>
       </div>
       <div id="tiles" class="tiles" aria-live="polite"></div>
       <div class="subscription-actions" aria-label="Abo Optionen">
@@ -553,6 +571,26 @@ function updateLoginButton() {
     loginBtn.textContent = 'Anmelden';
     if (registerBtn) registerBtn.classList.remove('hidden');
   }
+  renderVisitorIntro();
+}
+
+// Ausgeloggte Besucher sahen bisher als Erstes vier gesperrte Kacheln und
+// mussten «Konto erstellen» als kleinen Textlink zwischen drei anderen Links
+// suchen. Jetzt steht oben eine Begrüssung mit einem klaren Hauptknopf, und
+// die Abo-Links (für Fremde ohne Bedeutung) sind ausgeblendet.
+// Für Eingeloggte ändert sich nichts.
+function renderVisitorIntro() {
+  const intro = byId('visitor-intro');
+  if (!intro) return;
+  const ausgeloggt = !state.session;
+  intro.classList.toggle('shown', ausgeloggt);
+
+  const paywallBtn = byId('open-paywall');
+  const verwaltenLink = document.querySelector('.subscription-actions a[href*="billing.stripe.com"]');
+  const registerBtn = byId('open-register');
+  [paywallBtn, verwaltenLink, registerBtn].forEach((el) => {
+    if (el) el.classList.toggle('hidden', ausgeloggt);
+  });
 }
 
 function authIntentFromUrl() {
@@ -1524,6 +1562,8 @@ function wireEvents() {
 
   byId('open-paywall').addEventListener('click', openPaywall);
   byId('open-register').addEventListener('click', () => openAuthScreen('register'));
+  byId('visitor-register').addEventListener('click', () => openAuthScreen('register'));
+  byId('visitor-login').addEventListener('click', () => openAuthScreen('login'));
   byId('open-login').addEventListener('click', async () => {
     if (state.session) {
       await supabase.auth.signOut();
