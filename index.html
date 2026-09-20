@@ -3,20 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no.0, viewport-fit=cover">
-<meta name="theme-color" content="#F5F3EE">
+<meta name="theme-color" content="#F7F3EC">
 <title>clar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Farblogik identisch zu den vier Apps (Branch design/clar-ui-modernisation,
+   src/clar-ui.css): Creme #F7F3EC, Navy #1B2A4A, weisse Karten, Inter.
+   Die Variablennamen bleiben wie gehabt — --green heisst weiterhin so,
+   führt aber jetzt das Navy, damit keine andere Stelle angefasst werden muss.
+   Die App-Akzente sind die abgenommenen --clar-app-Werte der Apps;
+   heim ist das Mauve aus Commit f843085, NICHT das abgelehnte Violett. */
 :root{
-  --paper:#F5F3EE;
-  --green:#2E5C3E;
-  --text:#1C2E1C;
-  --muted:#667566;
-  --line:#DAD6CC;
-  --soft:#EBE6DC;
-  --danger:#8B3A2B;
+  --paper:#F7F3EC;
+  --surface:#FFFFFF;
+  --green:#1B2A4A;
+  --green-deep:#121C33;
+  --text:#1B2A4A;
+  --muted:#626C7E;
+  --line:#E5E0D8;
+  --soft:#F0ECE5;
+  --danger:#A32D2D;
+  /* Die vier Markenpunkte — identisch zu ClarBrand.tsx in allen Apps.
+     Achtung: heim fuehrt hier #7A5CB0, nicht das Mauve #8B789B. Mauve ist
+     heims In-App-Akzent; die Punkte sind markenweit und bleiben unveraendert
+     (so ausdruecklich im Dossier festgehalten). Der Hub ist Markenflaeche. */
+  --app-tag:#2F9A68;
+  --app-heim:#7A5CB0;
+  --app-markt:#D4941A;
+  --app-log:#3D8BD4;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{height:100%;background:var(--paper);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;}
+html,body{height:100%;background:var(--paper);color:var(--text);font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased;}
 body{min-height:100vh;}
 button,input{font:inherit;color:inherit;}
 button{cursor:pointer;}
@@ -32,25 +51,28 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .logo.small{font-size:2.75rem;align-self:center;margin-bottom:.25rem;}
 .title{font-size:1.45rem;line-height:1.15;font-weight:750;letter-spacing:-.03em;color:var(--text);}
 .copy{color:var(--muted);font-size:.98rem;line-height:1.45;}
-.card{width:100%;border:1px solid var(--line);border-radius:1.35rem;background:rgba(245,243,238,.82);box-shadow:0 1rem 2.5rem rgba(46,92,62,.12);padding:1.2rem;}
+.card{width:100%;border:1px solid var(--line);border-radius:1.5rem;background:var(--surface);box-shadow:0 1rem 2.5rem rgba(27,42,74,.07);padding:1.4rem;}
 .form{display:flex;flex-direction:column;gap:.85rem;width:100%;}
 .field{display:flex;flex-direction:column;gap:.4rem;text-align:left;}
 .label{font-size:.86rem;font-weight:650;color:var(--text);}
 .input-row{position:relative;}
-.input{width:100%;min-height:3.25rem;border:1px solid var(--line);border-radius:.9rem;background:rgba(255,255,255,.72);padding:0 1rem;outline:none;}
-.input:focus{border-color:var(--green);box-shadow:0 0 0 .2rem rgba(46,92,62,.14);}
+.input{width:100%;min-height:3.25rem;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.72);padding:0 1rem;outline:none;}
+.input:focus{border-color:var(--green);box-shadow:0 0 0 .2rem rgba(27,42,74,.14);}
 .password-input{padding-right:3.25rem;}
 .eye-button{position:absolute;right:.35rem;top:50%;display:grid;width:2.5rem;height:2.5rem;place-items:center;transform:translateY(-50%);border:0;border-radius:.75rem;background:transparent;color:var(--green);}
 .eye-button svg{width:1.25rem;height:1.25rem;stroke:currentColor;}
-.primary{min-height:3.25rem;border-radius:.9rem;font-weight:700;}
+.primary{min-height:3.25rem;border-radius:999px;font-weight:600;}
 .primary{border:0;background:var(--green);color:var(--paper);}
 .status{min-height:1.25rem;color:var(--muted);font-size:.9rem;line-height:1.35;text-align:center;}
 .status.error{color:var(--danger);}
 .tiles{display:flex;width:100%;max-width:34rem;flex-direction:column;gap:.85rem;}
 .tile-section{width:100%;margin:.35rem 0 -.2rem;color:var(--muted);font-size:.73rem;font-weight:800;letter-spacing:.08em;text-align:left;text-transform:uppercase;}
-.tile{display:flex;min-height:5.85rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-decoration:none;color:var(--text);box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
+.tile{display:flex;min-height:5.85rem;align-items:center;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-decoration:none;color:var(--text);box-shadow:0 .65rem 1.7rem rgba(27,42,74,.06);}
 .tile:active{transform:scale(.99);}
-.tile-icon{display:grid;flex:0 0 auto;width:3rem;height:3rem;place-items:center;border-radius:.9rem;font-size:1.3rem;}
+.tile-icon{display:grid;flex:0 0 auto;width:3rem;height:3rem;place-items:center;border-radius:.9rem;}
+.tile-icon svg{width:1.5rem;height:1.5rem;}
+.tile-lock{display:grid;place-items:center;color:var(--muted);}
+.tile-lock svg{width:1.25rem;height:1.25rem;}
 .tile-body{display:flex;min-width:0;flex:1;align-items:center;gap:.85rem;text-align:left;}
 .tile-text{min-width:0;}
 .tile-name{font-size:1.35rem;font-weight:800;letter-spacing:-.04em;color:var(--green);}
@@ -60,19 +82,22 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .subscription-actions{display:flex;width:100%;max-width:34rem;flex-wrap:wrap;align-items:center;justify-content:center;gap:.35rem 1rem;margin-top:.1rem;}
 /* Begrüssung für Besucher ohne Konto. Wird nur im ausgeloggten Zustand
    eingeblendet (siehe renderVisitorIntro) — Eingeloggte sehen sie nie. */
-.visitor-intro{display:none;width:100%;max-width:34rem;flex-direction:column;align-items:stretch;gap:.9rem;border:1px solid var(--line);border-radius:1.35rem;background:rgba(255,255,255,.72);box-shadow:0 1rem 2.5rem rgba(46,92,62,.1);padding:1.4rem 1.3rem;text-align:center;}
+.visitor-intro{display:none;width:100%;max-width:34rem;flex-direction:column;align-items:stretch;gap:.9rem;border:1px solid var(--line);border-radius:1.35rem;background:var(--surface);box-shadow:0 1rem 2.5rem rgba(27,42,74,.07);padding:1.4rem 1.3rem;text-align:center;}
 .visitor-intro.shown{display:flex;}
 .visitor-intro .aktion{display:inline-flex;align-items:center;gap:.45rem;align-self:center;border-radius:100px;background:var(--soft);color:var(--green);font-size:.8rem;font-weight:700;padding:.4rem .85rem;}
 .visitor-intro .aktion .punkt{width:.45rem;height:.45rem;border-radius:50%;background:var(--green);}
 .visitor-intro h2{font-size:1.15rem;font-weight:750;letter-spacing:-.02em;color:var(--text);}
 .visitor-intro p{color:var(--muted);font-size:.93rem;line-height:1.5;}
-.visitor-intro .primary{display:flex;align-items:center;justify-content:center;width:100%;text-decoration:none;}
+.visitor-intro .primary{display:flex;border-radius:999px;align-items:center;justify-content:center;width:100%;text-decoration:none;}
 .visitor-intro .zweitweg{font-size:.88rem;color:var(--muted);}
 .visitor-intro .zweitweg button{appearance:none;border:0;background:transparent;color:var(--green);font-weight:700;text-decoration:underline;font-size:.88rem;}
 .billing-button{appearance:none;border:0;background:transparent;color:var(--green);font-size:.82rem;font-weight:650;text-decoration:none;}
 .billing-button:hover,.billing-button:focus-visible,.billing-button:active{text-decoration:underline;}
 .topbar{display:flex;width:100%;max-width:34rem;align-items:center;justify-content:center;margin-bottom:1rem;}
 .topbar .logo{font-size:2rem;}
+.logo{display:inline-flex;align-items:center;gap:.4rem;}
+.logo-dots{width:.42em;height:.42em;flex-shrink:0;align-self:center;}
+.splash .logo-dots{display:none;}
 .paywall-screen{align-items:stretch;justify-content:center;}
 .paywall-screen.active{display:block;}
 .paywall-shell{display:flex;width:100%;max-width:43rem;margin:0 auto;flex-direction:column;gap:1rem;}
@@ -80,16 +105,16 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .paywall-close{display:grid;flex:0 0 auto;width:2.75rem;height:2.75rem;place-items:center;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);font-size:1.35rem;line-height:1;}
 .billing-toggle{display:grid;grid-template-columns:1fr 1fr;gap:.25rem;border:1px solid var(--line);border-radius:14px;background:var(--soft);padding:.25rem;}
 .billing-toggle button{display:flex;min-height:3rem;align-items:center;justify-content:center;gap:.45rem;border:0;border-radius:11px;background:transparent;color:var(--muted);font-weight:750;}
-.billing-toggle button.active{background:#fff;color:var(--green);box-shadow:0 .45rem 1.2rem rgba(46,92,62,.1);}
-.recommended-badge,.plan-badge{display:inline-flex;align-items:center;border-radius:999px;background:rgba(46,92,62,.11);padding:.16rem .45rem;color:var(--green);font-size:.65rem;font-weight:800;letter-spacing:.02em;}
+.billing-toggle button.active{background:#fff;color:var(--green);box-shadow:0 .45rem 1.2rem rgba(27,42,74,.1);}
+.recommended-badge,.plan-badge{display:inline-flex;align-items:center;border-radius:999px;background:rgba(27,42,74,.11);padding:.16rem .45rem;color:var(--green);font-size:.65rem;font-weight:800;letter-spacing:.02em;}
 .plan-grid{display:grid;gap:.8rem;}
-.plan-card{position:relative;display:flex;width:100%;align-items:flex-start;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-align:left;box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
-.plan-card.selected{border-color:var(--green);box-shadow:0 0 0 .18rem rgba(46,92,62,.12),0 .85rem 2rem rgba(46,92,62,.12);}
+.plan-card{position:relative;display:flex;width:100%;align-items:flex-start;justify-content:space-between;gap:1rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;text-align:left;box-shadow:0 .65rem 1.7rem rgba(27,42,74,.06);}
+.plan-card.selected{border-color:var(--green);box-shadow:0 0 0 .18rem rgba(27,42,74,.12),0 .85rem 2rem rgba(27,42,74,.12);}
 .plan-copy{display:flex;min-width:0;flex-direction:column;gap:.25rem;}
 .plan-name{font-size:1.05rem;font-weight:800;letter-spacing:-.02em;color:var(--text);}
 .plan-price{color:var(--green);font-size:1.15rem;font-weight:850;white-space:nowrap;}
 .plan-note{color:var(--muted);font-size:.86rem;line-height:1.35;}
-.app-selection{display:flex;flex-direction:column;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;box-shadow:0 .65rem 1.7rem rgba(46,92,62,.08);}
+.app-selection{display:flex;flex-direction:column;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:1rem;box-shadow:0 .65rem 1.7rem rgba(27,42,74,.06);}
 .app-options{display:grid;gap:.55rem;}
 .app-choice{display:flex;align-items:center;gap:.75rem;border:1px solid var(--line);border-radius:14px;background:rgba(245,243,238,.56);padding:.8rem;text-align:left;}
 .app-choice input{width:1.1rem;height:1.1rem;accent-color:var(--green);}
@@ -110,7 +135,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .hidden{display:none!important;}
 .consent-options{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;}
 .consent-option{display:flex;flex-direction:column;gap:.2rem;border:1px solid var(--line);border-radius:14px;background:#fff;padding:.75rem;text-align:left;cursor:pointer;}
-.consent-option.selected{border-color:var(--green);box-shadow:0 0 0 .14rem rgba(46,92,62,.12);}
+.consent-option.selected{border-color:var(--green);box-shadow:0 0 0 .14rem rgba(27,42,74,.12);}
 .consent-option-title{font-weight:800;color:var(--text);font-size:.95rem;}
 .consent-option-desc{color:var(--muted);font-size:.8rem;line-height:1.35;}
 .consent-note{color:var(--muted);font-size:.72rem;line-height:1.4;margin:.6rem 0 .25rem;}
@@ -124,7 +149,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 .auth-switch{appearance:none;border:0;background:transparent;color:var(--green);font-size:.9rem;font-weight:650;text-decoration:underline;min-height:2.4rem;}
 </style>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#2E5C3E">
+  <meta name="theme-color" content="#1B2A4A">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="clar">
@@ -138,7 +163,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 
   <section id="login-screen" class="screen" aria-labelledby="login-title">
     <div class="stack center">
-      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
+      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·<svg class="logo-dots" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="5" cy="5" r="4" fill="#2F9A68"/><circle cx="15" cy="5" r="4" fill="#7A5CB0"/><circle cx="5" cy="15" r="4" fill="#D4941A"/><circle cx="15" cy="15" r="4" fill="#3D8BD4"/></svg></button>
       <div class="card">
         <div class="stack">
           <div>
@@ -190,7 +215,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
 
   <section id="entitlement-screen" class="screen" aria-labelledby="entitlement-title">
     <div class="stack center">
-      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·</button>
+      <button class="logo small" type="button" data-logo-tap aria-label="clar">clar·<svg class="logo-dots" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="5" cy="5" r="4" fill="#2F9A68"/><circle cx="15" cy="5" r="4" fill="#7A5CB0"/><circle cx="5" cy="15" r="4" fill="#D4941A"/><circle cx="15" cy="15" r="4" fill="#3D8BD4"/></svg></button>
       <div class="card">
         <div class="stack center">
           <h1 id="entitlement-title" class="title">Abo wird geprüft</h1>
@@ -201,8 +226,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
   </section>
 
   <section id="app-screen" class="screen" style="padding:0;background:#fff;">
-    <div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:100;background:#2E5C3E;color:#F5F3EE;display:flex;align-items:center;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));font-size:15px;font-weight:600;">
-      <button id="close-app-btn" style="background:none;border:none;color:#F5F3EE;font-size:15px;font-weight:600;cursor:pointer;padding:0;">← clar</button>
+    <div id="app-header" style="position:fixed;top:0;left:0;right:0;z-index:100;background:#1B2A4A;color:#F7F3EC;display:flex;align-items:center;padding:12px 16px;padding-top:max(12px,env(safe-area-inset-top));font-size:15px;font-weight:600;">
+      <button id="close-app-btn" style="background:none;border:none;color:#F7F3EC;font-size:15px;font-weight:600;cursor:pointer;padding:0;">← clar</button>
     </div>
     <iframe id="app-iframe" src="" style="position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;border:none;padding-top:max(44px,calc(44px + env(safe-area-inset-top)));box-sizing:border-box;touch-action:manipulation;"></iframe>
   </section>
@@ -210,7 +235,7 @@ button:disabled{cursor:not-allowed;opacity:.58;}
   <section id="tiles-screen" class="screen" aria-labelledby="tiles-title">
     <div class="stack center" style="max-width:34rem">
       <div class="topbar">
-        <button class="logo" type="button" data-logo-tap aria-label="clar">clar·</button>
+        <button class="logo" type="button" data-logo-tap aria-label="clar">clar·<svg class="logo-dots" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="5" cy="5" r="4" fill="#2F9A68"/><circle cx="15" cy="5" r="4" fill="#7A5CB0"/><circle cx="5" cy="15" r="4" fill="#D4941A"/><circle cx="15" cy="15" r="4" fill="#3D8BD4"/></svg></button>
       </div>
       <div>
         <h1 id="tiles-title" class="title">Deine clar·Apps</h1>
@@ -411,8 +436,8 @@ const apps = [
     aliases: ['clarmarkt', 'clar·markt', 'clar.markt', 'clar-markt', 'markt'],
     name: 'clar·markt',
     description: 'Einkaufsplanung',
-    icon: '🛒',
-    color: '#C97B3A',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3h2.2l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.3L20.5 7H6"/></svg>`,
+    color: '#D4941A',
     url: 'https://clar.markt.lautini.ch/app'
   },
   {
@@ -420,8 +445,8 @@ const apps = [
     aliases: ['clarheim', 'clar·heim', 'clar.heim', 'clar-heim', 'heim'],
     name: 'clar·heim',
     description: 'Haushaltsorganisation',
-    icon: '🏠',
-    color: '#2E5C3E',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.2 12 3.3l8.5 6.9"/><path d="M5.6 11.9v7.6a1 1 0 0 0 1 1h10.8a1 1 0 0 0 1-1v-7.6"/><path d="M9.9 20.5v-5.4h4.2v5.4"/></svg>`,
+    color: '#7A5CB0',
     url: 'https://clar.heim.lautini.ch/heute'
   },
   {
@@ -429,8 +454,8 @@ const apps = [
     aliases: ['clarlog', 'clar·log', 'clar.log', 'clar-log', 'log'],
     name: 'clar·log',
     description: 'Stimulanzien-Tagebuch',
-    icon: '📖',
-    color: '#5B7AAE',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.6C10.3 5.2 8.2 4.6 5 4.6a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1 1c3.2 0 5.3.6 7 2 1.7-1.4 3.8-2 7-2a1 1 0 0 0 1-1V5.6a1 1 0 0 0-1-1c-3.2 0-5.3.6-7 2Z"/><path d="M12 6.6v14"/></svg>`,
+    color: '#3D8BD4',
     url: 'https://clar.log.lautini.ch/heute'
   },
   {
@@ -438,8 +463,8 @@ const apps = [
     aliases: ['clartag', 'clar·tag', 'clar.tag', 'clar-tag', 'tag'],
     name: 'clar·tag',
     description: 'Tagesstruktur & Routinen',
-    icon: '🕐',
-    color: '#7A5BAE',
+    icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.2V12l3.2 2"/></svg>`,
+    color: '#2F9A68',
     url: 'https://clar.tag.lautini.ch'
   }
 ];
@@ -1403,7 +1428,8 @@ function createTile(app) {
   body.className = 'tile-body';
   icon.className = 'tile-icon';
   icon.style.backgroundColor = `${app.color}20`;
-  icon.textContent = app.icon;
+  icon.innerHTML = app.icon;
+  icon.style.color = app.color;
   text.className = 'tile-text';
   name.className = 'tile-name';
   desc.className = 'tile-desc';
@@ -1426,7 +1452,11 @@ function createTile(app) {
   action.className = 'tile-action';
 
   if (isLocked) {
-    action.appendChild(createActionText('🔒'));
+    const schloss = document.createElement('span');
+    schloss.className = 'tile-lock';
+    schloss.setAttribute('aria-label', 'gesperrt');
+    schloss.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4.6" y="10.4" width="14.8" height="10" rx="2.2"/><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8"/></svg>';
+    action.appendChild(schloss);
   } else {
     action.appendChild(createActionText('›'));
   }
