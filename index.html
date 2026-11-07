@@ -241,7 +241,8 @@ button:disabled{cursor:not-allowed;opacity:.58;}
         <h1 id="tiles-title" class="title">Deine clar·Apps</h1>
       </div>
       <div id="visitor-intro" class="visitor-intro">
-        <span class="aktion"><span class="punkt" aria-hidden="true"></span>Bis 31. Oktober kostenlos</span>
+        <span class="aktion" id="aktion-hinweis"><span class="punkt" aria-hidden="true"></span>Bis 31. Januar 2027 kostenlos</span>
+        <script>/* Hinweis blendet sich nach Ende der Gratis-Aktion selbst aus */ if (new Date() >= new Date("2027-02-01T00:00:00+01:00")) document.getElementById("aktion-hinweis").remove();</script>
         <h2>Vier Werkzeuge für den Alltag mit ADHS</h2>
         <p>Tagesstruktur, Haushalt, Einkauf und ein Beobachtungs-Tagebuch. Konto anlegen, E-Mail bestätigen, loslegen — kein Zahlungsmittel, kein Abo.</p>
         <button id="visitor-register" class="primary" type="button">Konto erstellen</button>
